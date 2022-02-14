@@ -11,8 +11,7 @@ import re
 VERSIONFILE="ontospy/VERSION.py"
 verstrline = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-mo = re.search(VSRE, verstrline, re.M)
-if mo:
+if mo := re.search(VSRE, verstrline, re.M):
     VERSIONSTRING = mo.group(1)
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
@@ -49,11 +48,10 @@ def get_package_folders(top_folder, root_path):
     _dirs = []
     out = []
     for root, dirs, files in os.walk(top_folder):
-        for dir in dirs:
-            _dirs.append(os.path.join(root, dir))
+        _dirs.extend(os.path.join(root, dir) for dir in dirs)
     for d in _dirs:
         _d = os.path.join(d, "*.*")
-        out.append(_d.replace(root_path+"/", ""))
+        out.append(_d.replace(f'{root_path}/', ""))
     return out
 
 
@@ -66,8 +64,7 @@ PACKAGE_DATA_FOLDERS = get_package_folders(
     DATA_STATIC_FILES, PROJECT_ROOT) + get_package_folders(
         DATA_TEMPLATE_FILES, PROJECT_ROOT)
 
-if True:
-    print(PACKAGE_DATA_FOLDERS)
+print(PACKAGE_DATA_FOLDERS)
 
 
 

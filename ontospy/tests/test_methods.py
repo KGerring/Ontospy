@@ -88,21 +88,21 @@ class TestMethods(unittest.TestCase):
 
 
 	def test1(self):
-		"""
+	    """
 		Instances method
 		"""
-		printDebug("\n=================\nTEST 1: Checking the <instances> method", bg="green")
+	    printDebug("\n=================\nTEST 1: Checking the <instances> method", bg="green")
 
-		for c in self.o.all_classes:
-			# c.describe()
-			if c.instances:
-				print("CLASS: " + c.uri + " " + c.title)
-				print("INSTANCES: ")
-				for el in c.instances:
-					print(el.uri, el.qname)
-					print(el.getValuesForProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
-		
-		printDebug("Test completed succesfully.\n", "green")
+	    for c in self.o.all_classes:
+	        		# c.describe()
+	        if c.instances:
+	            print(f'CLASS: {c.uri} {c.title}')
+	            print("INSTANCES: ")
+	            for el in c.instances:
+	            	print(el.uri, el.qname)
+	            	print(el.getValuesForProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+
+	    printDebug("Test completed succesfully.\n", "green")
 
 
 	def test2(self):
@@ -136,19 +136,19 @@ class TestMethods(unittest.TestCase):
 
 
 	def test4(self):
-		"""
+	    """
 		build_entity_from_uri - SampleCustomEntity
 		"""
-		printDebug("\n=================\nTEST 4: Checking the <build_entity_from_uri> method using a SampleCustomEntity class ", bg="green")
+	    printDebug("\n=================\nTEST 4: Checking the <build_entity_from_uri> method using a SampleCustomEntity class ", bg="green")
 
-		e = self.o.build_entity_from_uri("http://www.co-ode.org/ontologies/pizza/pizza.owl#FruttiDiMare", SampleCustomEntity)
-		print("URI: ", e)
-		print("RDFTYPE: ", e.rdftype)
-		print("BEST LABEL: ", e.bestLabel())
-		print("TITLE: ", e.title)
-		print("OWL DISJOINT WITH: ")
-		print("\n".join([x for x in e.disjointWith()]))
-		printDebug("Test completed succesfully.\n", "green")
+	    e = self.o.build_entity_from_uri("http://www.co-ode.org/ontologies/pizza/pizza.owl#FruttiDiMare", SampleCustomEntity)
+	    print("URI: ", e)
+	    print("RDFTYPE: ", e.rdftype)
+	    print("BEST LABEL: ", e.bestLabel())
+	    print("TITLE: ", e.title)
+	    print("OWL DISJOINT WITH: ")
+	    print("\n".join(list(e.disjointWith())))
+	    printDebug("Test completed succesfully.\n", "green")
 
 
 

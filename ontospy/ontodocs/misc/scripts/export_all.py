@@ -84,10 +84,7 @@ This application is a wrapper on the main ontospy-viz script. It generates docs 
 
         full_uri = os.path.join(source_folder, onto_name)
         if theme:
-            if theme == "random":
-                _theme = random_theme()
-            else:
-                _theme = theme
+            _theme = random_theme() if theme == "random" else theme
         else:
             _theme = BOOTSWATCH_THEME_DEFAULT
         click.secho("Onto: <%s> Theme: '%s'" % (onto_name, _theme), fg="green")
@@ -135,9 +132,9 @@ This application is a wrapper on the main ontospy-viz script. It generates docs 
 </html>
     """
     with open(report_path, "w") as text_file:
-        text_file.write(html % ("".join([x for x in report_pages])))
+        text_file.write(html % "".join(list(report_pages)))
     # open report
-    webbrowser.open("file:///" + report_path)
+    webbrowser.open(f'file:///{report_path}')
 
     raise SystemExit(1)
 

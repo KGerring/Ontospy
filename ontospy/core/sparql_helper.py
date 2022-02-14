@@ -104,7 +104,7 @@ class SparqlHelper(object):
         if hide_implicit_types == True:  # .. then do not add extra clause
             BIT_IMPLICIT_TYPES = ""
 
-        query = query % (BIT_IMPLICIT_TYPES, BIT_BASE_SCHEMAS)
+        query %= (BIT_IMPLICIT_TYPES, BIT_BASE_SCHEMAS)
 
         # printDebug(query)
 
@@ -157,7 +157,7 @@ class SparqlHelper(object):
                              { ?a ?x ?b }"""
         if hide_implicit_preds:
             BIT_IMPLICIT_PREDICATES = ""
-        query = query % BIT_IMPLICIT_PREDICATES
+        query %= BIT_IMPLICIT_PREDICATES
         # printDebug(query)
         qres = self.rdflib_graph.query(query)
         return list(qres)
@@ -241,13 +241,9 @@ class SparqlHelper(object):
             for tripl in triples_list:
                 if isBlankNode(tripl[2]):
                     # print "blank node", str(tripl[2])
-                    temp = [
-                        x for x in self.rdflib_graph.triples((tripl[2], None,
-                                                              None))
-                    ]
+                    temp = list(self.rdflib_graph.triples((tripl[2], None,
+                                                              None)))
                     out += temp + recurse(temp)
-                else:
-                    pass
             return out
 
         if self.sparql_endpoint:

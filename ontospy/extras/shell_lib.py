@@ -68,7 +68,7 @@ def _get_prompt(onto="", entity=""):
     base_color, onto_color, entity_color = Fore.RED + Style.BRIGHT, Fore.BLACK + Style.DIM, Fore.BLACK
 
     if not onto and not entity:
-        base_text = base_color + '[Ontospy]' + Style.RESET_ALL
+        base_text = f'{base_color}[Ontospy]' + Style.RESET_ALL
 
     if onto and not entity:
         _tmp = onto_color + '(%s)' % onto
@@ -79,7 +79,7 @@ def _get_prompt(onto="", entity=""):
         onto_text = _tmp + Style.RESET_ALL
 
         _tmp2 = entity_color + '(%s:%s)' % (entity['type'], entity['name'])
-        entity_text = "-" + _tmp2 + Style.RESET_ALL
+        entity_text = f'-{_tmp2}{Style.RESET_ALL}'
 
     return base_text + onto_text + entity_text + "> "
 
@@ -137,13 +137,12 @@ class Shell(cmd.Cmd):
             2016-02-12: added to test, copied from
             https://github.com/xlcnd/isbntools/blob/master/isbntools/bin/repl.py
         """
-        if header:
-            if cmds:
-                self.stdout.write("%s\n" % str(header))
-                if self.ruler:
-                    self.stdout.write("%s\n" % str(self.ruler * len(header)))
-                self.columnize(cmds, maxcol - 1)
-                self.stdout.write("\n")
+        if header and cmds:
+            self.stdout.write("%s\n" % str(header))
+            if self.ruler:
+                self.stdout.write("%s\n" % str(self.ruler * len(header)))
+            self.columnize(cmds, maxcol - 1)
+            self.stdout.write("\n")
 
     def default(self, line):
         "default message when a command is not recognized"
@@ -184,7 +183,7 @@ class Shell(cmd.Cmd):
         try:
             s = "; ".join([p.qname for p in _list])
         except:
-            s = "; ".join([p for p in _list])
+            s = "; ".join(list(_list))
         return s
 
     def _clear_screen(self):
@@ -246,31 +245,105 @@ class Shell(cmd.Cmd):
             obj = self.currentEntity['object']
             label = obj.bestLabel() or NOTFOUND
             description = obj.bestDescription() or NOTFOUND
-            printInfo(Style.BRIGHT + "OBJECT TYPE: " + Style.RESET_ALL +
-                  Fore.BLACK + uri2niceString(obj.rdftype) + Style.RESET_ALL)
-            printInfo(Style.BRIGHT + "URI        : " + Style.RESET_ALL +
-                  Fore.GREEN + "<" + unicode(obj.uri) + ">" + Style.RESET_ALL)
-            printInfo(Style.BRIGHT + "TITLE      : " + Style.RESET_ALL +
-                  Fore.BLACK + label + Style.RESET_ALL)
-            printInfo(Style.BRIGHT + "DESCRIPTION: " + Style.RESET_ALL +
-                  Fore.BLACK + description + Style.RESET_ALL)
+            printInfo(
+                (
+                    (f'{Style.BRIGHT}OBJECT TYPE: {Style.RESET_ALL}' + Fore.BLACK)
+                    + uri2niceString(obj.rdftype)
+                    + Style.RESET_ALL
+                )
+            )
+
+            printInfo(
+                (
+                    (
+                        (
+                            (
+                                f'{Style.BRIGHT}URI        : {Style.RESET_ALL}'
+                                + Fore.GREEN
+                            )
+                            + "<"
+                        )
+                        + unicode(obj.uri)
+                        + ">"
+                    )
+                    + Style.RESET_ALL
+                )
+            )
+
+            printInfo(
+                (
+                    (
+                        (
+                            f'{Style.BRIGHT}TITLE      : {Style.RESET_ALL}'
+                            + Fore.BLACK
+                        )
+                        + label
+                    )
+                    + Style.RESET_ALL
+                )
+            )
+
+            printInfo(
+                (
+                    (
+                        (
+                            f'{Style.BRIGHT}DESCRIPTION: {Style.RESET_ALL}'
+                            + Fore.BLACK
+                        )
+                        + description
+                    )
+                    + Style.RESET_ALL
+                )
+            )
+
 
         else:
             self._clear_screen()
-            self._print("Graph: <" + self.current['fullpath'] + ">", 'TIP')
+            self._print(f'Graph: <{self.current["fullpath"]}>', 'TIP')
             self._print("----------------", "TIP")
             self._printStats(self.current['graph'])
             for obj in self.current['graph'].all_ontologies:
-                printInfo(Style.BRIGHT + "Ontology URI: " + Style.RESET_ALL +
-                      Fore.RED + "<%s>" % str(obj.uri) + Style.RESET_ALL)
+                printInfo(
+                    (
+                        (
+                            f'{Style.BRIGHT}Ontology URI: {Style.RESET_ALL}'
+                            + Fore.RED
+                        )
+                        + "<%s>" % str(obj.uri)
+                        + Style.RESET_ALL
+                    )
+                )
+
                 # self._print("==> Ontology URI: <%s>" % str(obj.uri), "IMPORTANT")
                 # self._print("----------------", "TIP")
                 label = obj.bestLabel() or NOTFOUND
                 description = obj.bestDescription() or NOTFOUND
-                printInfo(Style.BRIGHT + "Title       : " + Style.RESET_ALL +
-                      Fore.BLACK + label + Style.RESET_ALL)
-                printInfo(Style.BRIGHT + "Description : " + Style.RESET_ALL +
-                      Fore.BLACK + description + Style.RESET_ALL)
+                printInfo(
+                    (
+                        (
+                            (
+                                f'{Style.BRIGHT}Title       : {Style.RESET_ALL}'
+                                + Fore.BLACK
+                            )
+                            + label
+                        )
+                        + Style.RESET_ALL
+                    )
+                )
+
+                printInfo(
+                    (
+                        (
+                            (
+                                f'{Style.BRIGHT}Description : {Style.RESET_ALL}'
+                                + Fore.BLACK
+                            )
+                            + description
+                        )
+                        + Style.RESET_ALL
+                    )
+                )
+
         self._print("----------------", "TIP")
         # self._print("----------------", "TIP")
 
@@ -284,23 +357,18 @@ class Shell(cmd.Cmd):
             self._print("----------------")
         self._print("TAXONOMY:", "IMPORTANT")
         x = self.currentEntity['object']
-        parents = x.parents()
-
-        if not parents:
-            if self.currentEntity['type'] == 'class':
-                self._print("owl:Thing")
-            elif self.currentEntity['type'] == 'property':
-                self._print("RDF:Property")
-            elif self.currentEntity['type'] == 'concept':
-                self._print("SKOS:Concept")
-            else:
-                pass
-        else:
+        if parents := x.parents():
             for p in parents:
                 self._print(p.qname)
-        self._print("..." + x.qname, "TEXT")
+        elif self.currentEntity['type'] == 'class':
+            self._print("owl:Thing")
+        elif self.currentEntity['type'] == 'property':
+            self._print("RDF:Property")
+        elif self.currentEntity['type'] == 'concept':
+            self._print("SKOS:Concept")
+        self._print(f'...{x.qname}', "TEXT")
         for c in x.children():
-            self._print("......" + c.qname)
+            self._print(f'......{c.qname}')
         self._print("----------------")
 
     def _printClassDomain(self, hrlinetop=True, print_inferred=False):
@@ -407,21 +475,15 @@ class Shell(cmd.Cmd):
             if x.domains:
                 for d in x.domains:
                     # for domain/ranges which are not declared classes
-                    if hasattr(d, "qname"):
-                        _name = d.qname
-                    else:
-                        _name = str(d)
+                    _name = d.qname if hasattr(d, "qname") else str(d)
                     self._print(_name)
             else:
                 self._print("owl:Thing")
-            self._print("  " + x.qname, "TEXT")
+            self._print(f'  {x.qname}', "TEXT")
             if x.ranges:
                 for d in x.ranges:
                     # for domain/ranges which are not declared classes
-                    if hasattr(d, "qname"):
-                        _name = d.qname
-                    else:
-                        _name = str(d)
+                    _name = d.qname if hasattr(d, "qname") else str(d)
                     self._print("  " + "   => " + _name)
             else:
                 self._print("  " + "   => " + "owl:Thing")
@@ -471,16 +533,12 @@ class Shell(cmd.Cmd):
         if not _list:
             self._print("No matching items.", "TIP")
             return None
-        if using_pattern and len(_list) == 1:  # removed
-            pass
-            # return _list[0]
         if using_pattern:
             self._print("%d matching items: \n--------------" % len(_list), "TIP")
         else:
             self._print("%d items available: \n--------------" % len(_list), "TIP")
-        counter = 1
         _temp = []
-        for el in _list:
+        for counter, el in enumerate(_list, start=1):
             if hasattr(el, 'qname'):
                 _temp += [Fore.BLUE + Style.BRIGHT + "[%d] " %
                           counter + Style.RESET_ALL + str(el.qname)]
@@ -489,7 +547,6 @@ class Shell(cmd.Cmd):
                           counter + Style.RESET_ALL + str(el.uri)]
             else:
                 _temp += [Fore.BLUE + Style.BRIGHT + "[%d] " % counter + Style.RESET_ALL + str(el)]
-            counter += 1
         pprint2columns(_temp)
 
         self._print("--------------")
@@ -557,12 +614,8 @@ class Shell(cmd.Cmd):
             if var in range(1, len(self.all_ontologies)+1):
                 self._load_ontology(self.all_ontologies[var-1])
         except ValueError:
-            out = []
-            for each in self.all_ontologies:
-                if line in each:
-                    out += [each]
-            choice = self._selectFromList(out, line, "ontology")
-            if choice:
+            out = [each for each in self.all_ontologies if line in each]
+            if choice := self._selectFromList(out, line, "ontology"):
                 self._load_ontology(choice)
 
     def _select_class(self, line):
@@ -581,8 +634,7 @@ class Shell(cmd.Cmd):
             out = g.get_class(line)
         if out:
             if type(out) == type([]):
-                choice = self._selectFromList(out, using_pattern, "class")
-                if choice:
+                if choice := self._selectFromList(out, using_pattern, "class"):
                     self.currentEntity = {'name': choice.locale or choice.uri,
                                           'object': choice, 'type': 'class'}
             else:
@@ -607,8 +659,7 @@ class Shell(cmd.Cmd):
             out = g.get_property(line)
         if out:
             if type(out) == type([]):
-                choice = self._selectFromList(out, using_pattern, "property")
-                if choice:
+                if choice := self._selectFromList(out, using_pattern, "property"):
                     self.currentEntity = {'name': choice.locale or choice.uri,
                                           'object': choice, 'type': 'property'}
 
@@ -635,8 +686,7 @@ class Shell(cmd.Cmd):
             out = g.get_skos(line)
         if out:
             if type(out) == type([]):
-                choice = self._selectFromList(out, using_pattern, "concept")
-                if choice:
+                if choice := self._selectFromList(out, using_pattern, "concept"):
                     self.currentEntity = {'name': choice.locale or choice.uri,
                                           'object': choice, 'type': 'concept'}
             else:
@@ -657,26 +707,21 @@ class Shell(cmd.Cmd):
             self._help_nofiles()
 
         else:
-            out = []
-            for each in self.all_ontologies:
-                if line in each:
-                    out += [each]
-            choice = self._selectFromList(out, line)
-            if choice:
-                fullpath = self.LOCAL_MODELS + "/" + choice
+            out = [each for each in self.all_ontologies if line in each]
+            if choice := self._selectFromList(out, line):
+                fullpath = f'{self.LOCAL_MODELS}/{choice}'
                 if os.path.isfile(fullpath):
 
                     self._print("--------------")
                     self._print("Are you sure? [Y/N]")
                     var = input()
-                    if var == "y" or var == "Y":
-                        os.remove(fullpath)
-                        manager.del_pickled_ontology(choice)
-                        self._print("<%s> was deleted succesfully." % choice)
-                        self.all_ontologies = manager.get_localontologies()
-                    else:
+                    if var not in ["y", "Y"]:
                         return
 
+                    os.remove(fullpath)
+                    manager.del_pickled_ontology(choice)
+                    self._print("<%s> was deleted succesfully." % choice)
+                    self.all_ontologies = manager.get_localontologies()
                 else:
                     self._print("File not found.")
                 # delete
@@ -694,23 +739,18 @@ class Shell(cmd.Cmd):
         if not self.all_ontologies:
             self._help_nofiles()
         else:
-            out = []
-            for each in self.all_ontologies:
-                if line in each:
-                    out += [each]
-            choice = self._selectFromList(out, line)
-            if choice:
-                fullpath = self.LOCAL_MODELS + "/" + choice
+            out = [each for each in self.all_ontologies if line in each]
+            if choice := self._selectFromList(out, line):
+                fullpath = f'{self.LOCAL_MODELS}/{choice}'
                 printDebug(fullpath)
                 if os.path.isfile(fullpath):
 
                     self._print("--------------")
                     self._print("Please enter a new name for <%s>, including the extension (blank=abort)"
                                 % choice)
-                    var = input()
-                    if var:
+                    if var := input():
                         try:
-                            os.rename(fullpath, self.LOCAL_MODELS + "/" + var)
+                            os.rename(fullpath, f'{self.LOCAL_MODELS}/{var}')
                             manager.rename_pickled_ontology(choice, var)
                             self._print("<%s> was renamed succesfully." % choice)
                             self.all_ontologies = manager.get_localontologies()
@@ -761,7 +801,7 @@ class Shell(cmd.Cmd):
             else:
                 self._select_ontology(_pattern)
 
-        elif line[0] in opts and not self.current:
+        elif not self.current:
             self._help_noontology()
             return
 
@@ -786,9 +826,6 @@ class Shell(cmd.Cmd):
                 self._select_concept(_pattern)
             else:
                 self._print("No concepts available.")
-
-        else:  # should never arrive here
-            pass
 
     def do_tree(self, line):
         """Shows entities of a given kind."""
@@ -830,15 +867,10 @@ class Shell(cmd.Cmd):
             else:
                 self._print("No concepts available.")
 
-        else:  # should never arrive here
-            pass
-
     def do_get(self, line):
         """Finds entities matching a given string pattern. \nOptions: [ ontologies | classes | properties | concepts ]"""
         line = line.split()
-        _pattern = ""
-        if len(line) > 1:
-            _pattern = line[1]
+        _pattern = line[1] if len(line) > 1 else ""
         opts = self.GET_OPTS
 
         if (not line) or (line[0] not in opts) or (not _pattern):
@@ -852,7 +884,7 @@ class Shell(cmd.Cmd):
             else:
                 self._select_ontology(_pattern)
 
-        elif line[0] in opts and not self.current:
+        elif not self.current:
             self._help_noontology()
             return
 
@@ -876,9 +908,6 @@ class Shell(cmd.Cmd):
                 self._select_concept(_pattern)
             else:
                 self._print("No concepts available.")
-
-        else:  # should never arrive here
-            pass
 
     def do_info(self, line):
         """Inspect the current entity and display a nice summary of key properties"""
@@ -978,8 +1007,7 @@ class Shell(cmd.Cmd):
             return
 
         import webbrowser
-        url = action_visualize(args=self.current['file'], fromshell=True)
-        if url:
+        if url := action_visualize(args=self.current['file'], fromshell=True):
             webbrowser.open(url)
         return
 
@@ -994,8 +1022,7 @@ class Shell(cmd.Cmd):
         elif line and line[0] == "uri":
             self._print(
                 "------------------\nEnter a valid graph URI: (e.g. http://www.w3.org/2009/08/skos-reference/skos.rdf)")
-            var = input()
-            if var:
+            if var := input():
                 if var.startswith("http"):
                     try:
                         actions.action_import(var)
@@ -1008,8 +1035,7 @@ class Shell(cmd.Cmd):
         elif line and line[0] == "file":
             self._print(
                 "------------------\nEnter a full file path: (e.g. '/Users/mike/Desktop/journals.ttl')")
-            var = input()
-            if var:
+            if var := input():
                 try:
                     actions.action_import(var)
                 except:
@@ -1090,12 +1116,11 @@ class Shell(cmd.Cmd):
                 self._select_concept(str(nextentity.uri))
             else:
                 printInfo("Not implemented")
+        elif len(self.all_ontologies) > 1:
+            nextonto = self._next_ontology()
+            self._load_ontology(nextonto)
         else:
-            if len(self.all_ontologies) > 1:
-                nextonto = self._next_ontology()
-                self._load_ontology(nextonto)
-            else:
-                self._print("Only one ontology available in repository.")
+            self._print("Only one ontology available in repository.")
 
     def do_back(self, line):
         "Go back one step. From entity => ontology; from ontology => ontospy top level."
@@ -1148,56 +1173,65 @@ class Shell(cmd.Cmd):
 
     def help_ls(self):
         txt = "List available graphs or entities .\n"
-        txt += "==> Usage: ls [%s]" % "|".join([x for x in self.LS_OPTS])
+        txt += "==> Usage: ls [%s]" % "|".join(list(self.LS_OPTS))
         txt += "\n\nNote: ls is contextual. If you do not pass it any argument, it returns info based on the currently active object.\n"
         self._print(txt)
 
     def help_tree(self):
         txt = "Print the type hierarchy for an entity type.\n"
-        txt += "==> Usage: tree [%s]" % "|".join([x for x in self.TREE_OPTS])
+        txt += "==> Usage: tree [%s]" % "|".join(list(self.TREE_OPTS))
         # txt += "\n\nNote: tree is contextual. If you do not pass it any argument, it returns info based on the currently active object.\n"
         self._print(txt)
 
     def help_import(self):
         txt = "Import an ontology from a remote repository or directory.\n"
-        txt += "==> Usage: import [%s]" % "|".join([x for x in self.IMPORT_OPTS])
+        txt += "==> Usage: import [%s]" % "|".join(list(self.IMPORT_OPTS))
         self._print(txt)
 
     def help_visualize(self):
-        txt = "Visualize the currenlty selected ontology using an HTML template.\n"
-        txt += "==> Usage: visualize "
+        txt = (
+            "Visualize the currenlty selected ontology using an HTML template.\n"
+            + "==> Usage: visualize "
+        )
+
         self._print(txt)
 
     def help_file(self):
         txt = "Perform some operations on the files in the local repository.\n"
-        txt += "==> Usage: file [%s]" % "|".join([x for x in self.FILE_OPTS])
+        txt += "==> Usage: file [%s]" % "|".join(list(self.FILE_OPTS))
         self._print(txt)
 
     def help_serialize(self):
         txt = "Serialize an entity into an RDF flavour.\n"
-        txt += "==> Usage: serialize [%s]" % "|".join([x for x in self.SERIALIZE_OPTS])
+        txt += "==> Usage: serialize [%s]" % "|".join(list(self.SERIALIZE_OPTS))
         self._print(txt)
 
     def help_get(self):
         txt = "Finds entities matching a given string pattern.\n"
-        txt += "==> Usage: get [%s] <name>" % "|".join([x for x in self.GET_OPTS])
+        txt += "==> Usage: get [%s] <name>" % "|".join(list(self.GET_OPTS))
         self._print(txt)
 
     def help_info(self):
         txt = "Display information about an entity e.g. ontology, class etc..\n"
-        txt += "==> Usage: info OR info [%s]" % "|".join([x for x in self.INFO_OPTS])
+        txt += "==> Usage: info OR info [%s]" % "|".join(list(self.INFO_OPTS))
         self._print(txt)
 
     def _help_noontology(self):
         """starts with underscore so that it doesnt appear with help methods"""
-        txt = "No graph selected. Please load a graph first.\n"
-        txt += "==> E.g. use the 'ls ontologies' or 'get ontology <name>' commands."
+        txt = (
+            "No graph selected. Please load a graph first.\n"
+            + "==> E.g. use the 'ls ontologies' or 'get ontology <name>' commands."
+        )
+
         self._print(txt)
 
     def _help_nofiles(self):
         """starts with underscore so that it doesnt appear with help methods"""
-        txt = "No files available in your local repository.\n"
-        txt += "==> Use the 'import starter-pack' command to get started."
+        txt = (
+            "No files available in your local repository.\n"
+            + "==> Use the 'import starter-pack' command to get started."
+        )
+
         self._print(txt)
 
     # AUTOCOMPLETE METHODS
@@ -1208,121 +1242,92 @@ class Shell(cmd.Cmd):
 
         options = self.LS_OPTS
 
-        if not text:
-            completions = options
-        else:
-            completions = [f
+        return options if not text else [f
                            for f in options
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_tree(self, text, line, begidx, endidx):
         """completion for ls command"""
 
         options = self.TREE_OPTS
 
-        if not text:
-            completions = options
-        else:
-            completions = [f
+        return options if not text else [f
                            for f in options
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_get(self, text, line, begidx, endidx):
         """completion for find command"""
 
         options = self.GET_OPTS
 
-        if not text:
-            completions = options
-        else:
-            completions = [f
+        return options if not text else [f
                            for f in options
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_info(self, text, line, begidx, endidx):
         """completion for info command"""
 
         opts = self.INFO_OPTS
 
-        if not text:
-            completions = opts
-        else:
-            completions = [f
+        return opts if not text else [f
                            for f in opts
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_import(self, text, line, begidx, endidx):
         """completion for serialize command"""
 
         opts = self.IMPORT_OPTS
 
-        if not text:
-            completions = opts
-        else:
-            completions = [f
+        return opts if not text else [f
                            for f in opts
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_serialize(self, text, line, begidx, endidx):
         """completion for serialize command"""
 
         opts = self.SERIALIZE_OPTS
 
-        if not text:
-            completions = opts
-        else:
-            completions = [f
+        return opts if not text else [f
                            for f in opts
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_visualize(self, text, line, begidx, endidx):
         """completion for file command"""
 
         opts = self.VISUALIZE_OPTS
 
-        if not text:
-            completions = opts
-        else:
-            completions = [f
+        return opts if not text else [f
                            for f in opts
                            if f.startswith(text)
                            ]
-        return completions
 
     def complete_file(self, text, line, begidx, endidx):
         """completion for file command"""
 
         opts = self.FILE_OPTS
 
-        if not text:
-            completions = opts
-        else:
-            completions = [f
+        return opts if not text else [f
                            for f in opts
                            if f.startswith(text)
                            ]
-        return completions
 
 
 def main():
     """ standalone line script """
 
-    printInfo("Ontospy " + VERSION)
+    printInfo(f'Ontospy {VERSION}')
 
     Shell()._clear_screen()
-    printInfo(Style.BRIGHT + "** Ontospy Interactive Ontology Browser " + VERSION + " **" + Style.RESET_ALL)
+    printInfo(
+        f'{Style.BRIGHT}** Ontospy Interactive Ontology Browser {VERSION} **{Style.RESET_ALL}'
+    )
+
     # manager.get_or_create_home_repo()
     Shell().cmdloop()
     raise SystemExit(1)

@@ -56,9 +56,7 @@ class Dataviz(VizFactory):
         contents = self._renderTemplate(
             "d3/d3_pack_hierarchy.html", extraContext=extra_context)
         FILE_NAME = "index.html"
-        main_url = self._save2File(contents, FILE_NAME, self.output_path)
-
-        return main_url
+        return self._save2File(contents, FILE_NAME, self.output_path)
 
 
 # if called directly, for testing purposes pick a random ontology

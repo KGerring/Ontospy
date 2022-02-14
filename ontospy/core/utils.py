@@ -32,10 +32,10 @@ except NameError:
 
 
 def is_http(stringa):
-    if stringa:
-        if stringa.startswith("http://") or stringa.startswith("https://"):
-            return True
-    return False
+    return bool(
+        stringa
+        and (stringa.startswith("http://") or stringa.startswith("https://"))
+    )
 
 
 def safe_str(u, errors="replace"):
@@ -45,8 +45,7 @@ def safe_str(u, errors="replace"):
     can use `errors="xmlcharrefreplace"`.
     http://code.activestate.com/recipes/576602-safe-print/
     """
-    s = u.encode(sys.stdout.encoding or "utf-8", errors)
-    return s
+    return u.encode(sys.stdout.encoding or "utf-8", errors)
 
 
 def list_chunks(l, n):
@@ -175,7 +174,7 @@ def printDebug(text, mystyle="", err=True, **kwargs):
         click.secho(text, bold=True, err=err)
     elif mystyle == "normal":
         click.secho(text, reset=True, err=err)
-    elif mystyle == "red" or mystyle == "error":
+    elif mystyle in ["red", "error"]:
         click.secho(text, fg='red', err=err)
     elif mystyle == "green":
         click.secho(text, fg='green', err=err)
@@ -209,15 +208,15 @@ def pprint2columns(llist, max_length=60):
     col_width = max(len(word) for word in llist) + 2  # padding
 
     # llist length must be even, otherwise splitting fails
-    if not len(llist) % 2 == 0:
+    if len(llist) % 2 != 0:
         llist += [' ']  # add a fake element
 
     if col_width > max_length:
         for el in llist:
             printInfo(el)
     else:
-        column1 = llist[:int(len(llist) / 2)]
-        column2 = llist[int(len(llist) / 2):]
+        column1 = llist[:len(llist) // 2]
+        column2 = llist[len(llist) // 2:]
         for c1, c2 in zip(column1, column2):
             space = " " * (col_width - len(c1))
             printInfo("%s%s%s" % (c1, space, c2))
@@ -248,12 +247,9 @@ def pprinttable(rows):
     """
     if len(rows) > 1:
         headers = rows[0]._fields
-        lens = []
-        for i in range(len(rows[0])):
-            lens.append(
-                len(
+        lens = [len(
                     max([x[i] for x in rows] + [headers[i]],
-                        key=lambda x: len(str(x)))))
+                        key=lambda x: len(str(x)))) for i in range(len(rows[0]))]
         formats = []
         hformats = []
         for i in range(len(rows[0])):
@@ -304,16 +300,12 @@ def save_anonymous_gist(title, files):
 
     gist = create_gist(title, files)
 
-    urls = {
-        'gist':
-        gist.html_url,
-        'blocks':
-        "http://bl.ocks.org/anonymous/" + gist.html_url.split("/")[-1],
-        'blocks_fullwin':
-        "http://bl.ocks.org/anonymous/raw/" + gist.html_url.split("/")[-1]
+    return {
+        'gist': gist.html_url,
+        'blocks': "http://bl.ocks.org/anonymous/"
+        + gist.html_url.split("/")[-1],
+        'blocks_fullwin': f'http://bl.ocks.org/anonymous/raw/{gist.html_url.split("/")[-1]}',
     }
-
-    return urls
 
 
 def _clear_screen():
@@ -362,8 +354,7 @@ def playSound(folder, name=""):
 
 def truncate(data, l=20):
     "truncate a string"
-    info = (data[:l] + '..') if len(data) > l else data
-    return info
+    return f'{data[:l]}..' if len(data) > l else data
 
 
 # ========
@@ -383,10 +374,7 @@ NAMESPACES_DEFAULT = [
 
 def isBlankNode(aClass):
     """ small utility that checks if a class is a blank node """
-    if type(aClass) == BNode:
-        return True
-    else:
-        return False
+    return type(aClass) == BNode
 
 
 def printBasicInfo(onto):
@@ -431,17 +419,16 @@ def inferMainPropertyType(uriref):
     http://www.w3.org/2002/07/owl#TransitiveProperty
     etc.....
     """
-    if uriref:
-        if uriref == rdflib.OWL.DatatypeProperty:
-            return uriref
-        elif uriref == rdflib.OWL.AnnotationProperty:
-            return uriref
-        elif uriref == rdflib.RDF.Property:
-            return uriref
-        else:  # hack..
-            return rdflib.OWL.ObjectProperty
-    else:
+    if not uriref:
         return None
+    if uriref in [
+        rdflib.OWL.DatatypeProperty,
+        rdflib.OWL.AnnotationProperty,
+        rdflib.RDF.Property,
+    ]:
+        return uriref
+    else:  # hack..
+        return rdflib.OWL.ObjectProperty
 
 
 def printGenericTree(element,
@@ -463,8 +450,6 @@ def printGenericTree(element,
     <TYPE_MARGIN> is parametrized so that classes and properties can have different default spacing (eg owl:class vs owl:AnnotationProperty)
     """
 
-    ID_MARGIN = 5
-
     SHORT_TYPES = {
         "rdf:Property": "rdf:Property",
         "owl:AnnotationProperty": "owl:Annot.Pr.",
@@ -473,6 +458,8 @@ def printGenericTree(element,
     }
 
     if showids:
+        ID_MARGIN = 5
+
         _id_ = Fore.BLUE +	\
         "[%d]%s" % (element.id, " " * (ID_MARGIN  - len(str(element.id)))) +  \
             Fore.RESET
@@ -537,15 +524,16 @@ def joinStringsInList(literalEntities, prefLanguage="en"):
     if len(literalEntities) == 1:
         return literalEntities[0]
     elif len(literalEntities) > 1:
-        for x in literalEntities:
-            if getattr(x, 'language') and getattr(x,
-                                                  'language') == prefLanguage:
-                match.append(x)
-        if not match:  # don't bother about language
-            for x in literalEntities:
-                match.append(x)
+        match.extend(
+            x
+            for x in literalEntities
+            if getattr(x, 'language')
+            and getattr(x, 'language') == prefLanguage
+        )
 
-    return " - ".join([x for x in match])
+        if not match:  # don't bother about language
+            match.extend(iter(literalEntities))
+    return " - ".join(list(match))
 
 
 def sortByNamespacePrefix(urisList, nsList):
@@ -571,10 +559,7 @@ def sortByNamespacePrefix(urisList, nsList):
     exit = []
     urisList = sort_uri_list_by_name(urisList)
     for ns in nsList:
-        innerexit = []
-        for uri in urisList:
-            if str(uri).startswith(str(ns)):
-                innerexit += [uri]
+        innerexit = [uri for uri in urisList if str(uri).startswith(str(ns))]
         exit += innerexit
 
     # add remaining uris (if any)
@@ -771,15 +756,17 @@ def entityLabel(rdfGraph, anEntity, language=DEFAULT_LANGUAGE, getall=True):
     """
 
     if getall:
-        temp = []
-        for o in rdfGraph.objects(anEntity, RDFS.label):
-            temp += [o]
-        return temp
+        return list(rdfGraph.objects(anEntity, RDFS.label))
     else:
-        for o in rdfGraph.objects(anEntity, RDFS.label):
-            if getattr(o, 'language') and getattr(o, 'language') == language:
-                return o
-        return ""
+        return next(
+            (
+                o
+                for o in rdfGraph.objects(anEntity, RDFS.label)
+                if getattr(o, 'language')
+                and getattr(o, 'language') == language
+            ),
+            "",
+        )
 
 
 def entityComment(rdfGraph, anEntity, language=DEFAULT_LANGUAGE, getall=True):
@@ -794,15 +781,17 @@ def entityComment(rdfGraph, anEntity, language=DEFAULT_LANGUAGE, getall=True):
     """
 
     if getall:
-        temp = []
-        for o in rdfGraph.objects(anEntity, RDFS.comment):
-            temp += [o]
-        return temp
+        return list(rdfGraph.objects(anEntity, RDFS.comment))
     else:
-        for o in rdfGraph.objects(anEntity, RDFS.comment):
-            if getattr(o, 'language') and getattr(o, 'language') == language:
-                return o
-        return ""
+        return next(
+            (
+                o
+                for o in rdfGraph.objects(anEntity, RDFS.comment)
+                if getattr(o, 'language')
+                and getattr(o, 'language') == language
+            ),
+            "",
+        )
 
 
 def shellPrintOverview(g, opts={'labels': False}):
@@ -917,13 +906,13 @@ def try_sort_fmt_opts(rdf_format_opts_list, uri):
     """
     filename, file_extension = os.path.splitext(uri)
     # print(filename, file_extension)
-    if file_extension == ".ttl" or file_extension == ".turtle":
+    if file_extension in [".ttl", ".turtle"]:
         return ['turtle', 'n3', 'nt', 'json-ld', 'rdfa', 'xml']
-    elif file_extension == ".xml" or file_extension == ".rdf":
+    elif file_extension in [".xml", ".rdf"]:
         return ['xml', 'turtle', 'n3', 'nt', 'json-ld', 'rdfa']
-    elif file_extension == ".nt" or file_extension == ".n3":
+    elif file_extension in [".nt", ".n3"]:
         return ['n3', 'nt', 'turtle', 'xml', 'json-ld', 'rdfa']
-    elif file_extension == ".json" or file_extension == ".jsonld":
+    elif file_extension in [".json", ".jsonld"]:
         return [
             'json-ld',
             'rdfa',

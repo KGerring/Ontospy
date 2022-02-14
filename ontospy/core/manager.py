@@ -28,9 +28,6 @@ def get_or_create_home_repo(reset=False):
             if var == "y":
                 shutil.rmtree(ONTOSPY_LOCAL)
                 dosetup = True
-            else:
-                pass
-
     if dosetup or not (os.path.exists(ONTOSPY_LOCAL)):
         os.mkdir(ONTOSPY_LOCAL)
     if dosetup or not (os.path.exists(ONTOSPY_LOCAL_CACHE)):
@@ -65,7 +62,7 @@ def get_home_location():
     :return - a string e.g. "/users/mac/ontospy"
     """
     config = SafeConfigParser()
-    config_filename = ONTOSPY_LOCAL + '/config.ini'
+    config_filename = f'{ONTOSPY_LOCAL}/config.ini'
 
     if not os.path.exists(config_filename):
         config_filename = 'config.ini'
@@ -73,10 +70,7 @@ def get_home_location():
     config.read(config_filename)
     try:
         _location = config.get('models', 'dir')
-        if _location.endswith("/"):
-            return _location
-        else:
-            return _location + "/"
+        return _location if _location.endswith("/") else f'{_location}/'
     except:
         # FIRST TIME, create it
         config.add_section('models')
@@ -90,18 +84,18 @@ def get_home_location():
 
 def get_localontologies(pattern=""):
     "returns a list of file names in the ontologies folder (not the full path)"
-    res = []
     ONTOSPY_LOCAL_MODELS = get_home_location()
     if not os.path.exists(ONTOSPY_LOCAL_MODELS):
         get_or_create_home_repo()
-    for f in os.listdir(ONTOSPY_LOCAL_MODELS):
-        if os.path.isfile(os.path.join(ONTOSPY_LOCAL_MODELS, f)):
-            if not f.startswith(".") and not f.endswith(".pickle"):
-                if not pattern:
-                    res += [f]
-                else:
-                    if pattern in f:
-                        res += [f]
+    res = [
+        f
+        for f in os.listdir(ONTOSPY_LOCAL_MODELS)
+        if os.path.isfile(os.path.join(ONTOSPY_LOCAL_MODELS, f))
+        and not f.startswith(".")
+        and not f.endswith(".pickle")
+        and (pattern and pattern in f or not pattern)
+    ]
+
     return sorted(res)
 
 
@@ -121,21 +115,20 @@ def get_random_ontology(TOP_RANGE=10, pattern=""):
 
 def get_pickled_ontology(filename):
     """ try to retrieve a cached ontology """
-    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
+    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, f'{filename}.pickle')
     # pickledfile = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
     if GLOBAL_DISABLE_CACHE:
         printDebug(
             "WARNING: DEMO MODE cache has been disabled in __init__.py ==============",
             "red")
-    if os.path.isfile(pickledfile) and not GLOBAL_DISABLE_CACHE:
-        try:
-            return cPickle.load(open(pickledfile, "rb"))
-        except:
-            printDebug(Style.DIM +
-                  "** WARNING: Cache is out of date ** ...recreating it... " +
-                  Style.RESET_ALL)
-            return None
-    else:
+    if not os.path.isfile(pickledfile) or GLOBAL_DISABLE_CACHE:
+        return None
+    try:
+        return cPickle.load(open(pickledfile, "rb"))
+    except:
+        printDebug(Style.DIM +
+              "** WARNING: Cache is out of date ** ...recreating it... " +
+              Style.RESET_ALL)
         return None
 
 
@@ -143,20 +136,18 @@ def del_pickled_ontology(filename):
     """ 
     Remove a cached ontology based on related filename
     """
-    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
-    # pickledfile = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
-    if os.path.isfile(pickledfile) and not GLOBAL_DISABLE_CACHE:
-        os.remove(pickledfile)
-        return True
-    else:
+    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, f'{filename}.pickle')
+    if not os.path.isfile(pickledfile) or GLOBAL_DISABLE_CACHE:
         return None
+    os.remove(pickledfile)
+    return True
 
 
 def rename_pickled_ontology(filename, newname):
     """ try to rename a cached ontology """
-    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
+    pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, f'{filename}.pickle')
     # pickledfile = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
-    newpickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, newname + ".pickle")
+    newpickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, f'{newname}.pickle')
     # newpickledfile = ONTOSPY_LOCAL_CACHE + "/" + newname + ".pickle"
     if os.path.isfile(pickledfile) and not GLOBAL_DISABLE_CACHE:
         os.rename(pickledfile, newpickledfile)
@@ -174,7 +165,7 @@ def do_pickle_ontology(filename, g=None):
     """
     ONTOSPY_LOCAL_MODELS = get_home_location()
     get_or_create_home_repo()  # ensure all the right folders are there
-    pickledpath = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
+    pickledpath = os.path.join(ONTOSPY_LOCAL_CACHE, f'{filename}.pickle')
     # pickledpath = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
     if not g:
         g = Ontospy(os.path.join(ONTOSPY_LOCAL_MODELS, filename))

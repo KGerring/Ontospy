@@ -27,29 +27,24 @@ from ..core.utils import *
 from .. import *
 
 _dirname, _filename = os.path.split(os.path.abspath(__file__))
-ONTODOCS_VIZ_TEMPLATES = _dirname + "/media/templates/"
+ONTODOCS_VIZ_TEMPLATES = f'{_dirname}/media/templates/'
 ONTODOCS_VIZ_STATIC = _dirname + "/media/static/"
 
+from django.conf import settings
 if StrictVersion(django.get_version()) > StrictVersion('1.7'):
-    from django.conf import settings
-    from django.template import Context, Template
-
     settings.configure()
     django.setup()
     settings.TEMPLATES = [
         {
-            'BACKEND':
-            'django.template.backends.django.DjangoTemplates',
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': [
-                # insert your TEMPLATE_DIRS here
                 ONTODOCS_VIZ_TEMPLATES + "html-single",
                 ONTODOCS_VIZ_TEMPLATES + "html-multi",
-                ONTODOCS_VIZ_TEMPLATES + "markdown",
+                f'{ONTODOCS_VIZ_TEMPLATES}markdown',
                 ONTODOCS_VIZ_TEMPLATES + "d3",
                 ONTODOCS_VIZ_TEMPLATES + "misc",
             ],
-            'APP_DIRS':
-            True,
+            'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
                     # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
@@ -63,14 +58,14 @@ if StrictVersion(django.get_version()) > StrictVersion('1.7'):
                     'django.contrib.messages.context_processors.messages',
                 ],
             },
-        },
+        }
     ]
 
-else:
-    from django.conf import settings
-    from django.template import Context, Template
 
+else:
     settings.configure()
+
+from django.template import Context, Template
 
 try:
     from .CONFIG import VISUALIZATIONS_LIST, BOOTSWATCH_THEMES, BOOTSWATCH_THEME_DEFAULT
@@ -102,9 +97,8 @@ def validate_theme(theme_try, default=BOOTSWATCH_THEME_DEFAULT):
         return default
     if theme_try in BOOTSWATCH_THEMES:
         return theme_try
-    else:
-        printDebug("Warning: theme not found", "red")
-        return default
+    printDebug("Warning: theme not found", "red")
+    return default
 
 
 def ask_visualization():
@@ -115,22 +109,19 @@ def ask_visualization():
         "Please choose an output format for the ontology visualization: (q=quit)\n",
         "important")
     while True:
-        text = ""
-        for viz in VISUALIZATIONS_LIST:
-            text += "%d) %s\n" % (VISUALIZATIONS_LIST.index(viz) + 1,
-                                  viz['Title'])
-        var = input(text + ">")
+        text = "".join("%d) %s\n" % (VISUALIZATIONS_LIST.index(viz) + 1,
+                                  viz['Title']) for viz in VISUALIZATIONS_LIST)
+        var = input(f'{text}>')
         if var == "q":
             return ""
-        else:
-            try:
-                n = int(var) - 1
-                test = VISUALIZATIONS_LIST[
-                    n]  # throw exception if number wrong
-                return n
-            except:
-                printDebug("Invalid selection. Please try again.", "red")
-                continue
+        try:
+            n = int(var) - 1
+            test = VISUALIZATIONS_LIST[
+                n]  # throw exception if number wrong
+            return n
+        except:
+            printDebug("Invalid selection. Please try again.", "red")
+            continue
 
 
 def select_visualization(n):
@@ -207,9 +198,7 @@ def build_visualization(ontouri, g, viz_index, path=None, title="", theme=""):
     else:
         return False
 
-    url = v.build(path)
-
-    return url
+    return v.build(path)
 
 
 # ?LEGACY
@@ -255,5 +244,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
         }
     }
-    urls = save_anonymous_gist(title, files)
-    return urls
+    return save_anonymous_gist(title, files)

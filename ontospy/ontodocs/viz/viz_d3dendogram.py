@@ -43,30 +43,6 @@ class Dataviz(VizFactory):
         p_total = len(self.ontospy_graph.all_properties)
         s_total = len(self.ontospy_graph.all_skos_concepts)
 
-        if False:
-            # testing how a single tree would look like
-            JSON_DATA_CLASSES = json.dumps({
-                'children': [{
-                    'children': c_mylist,
-                    'name': 'Classes',
-                    'id': "classes"
-                },
-                             {
-                                 'children': p_mylist,
-                                 'name': 'Properties',
-                                 'id': "properties"
-                             },
-                             {
-                                 'children': s_mylist,
-                                 'name': 'Concepts',
-                                 'id': "concepts"
-                             }],
-                'name':
-                'Entities',
-                'id':
-                "root"
-            })
-
         # hack to make sure that we have a default top level object
         JSON_DATA_CLASSES = json.dumps({
             'children': c_mylist,
@@ -98,9 +74,7 @@ class Dataviz(VizFactory):
         contents = self._renderTemplate(
             "d3/d3_dendogram.html", extraContext=extra_context)
         FILE_NAME = "index.html"
-        main_url = self._save2File(contents, FILE_NAME, self.output_path)
-
-        return main_url
+        return self._save2File(contents, FILE_NAME, self.output_path)
 
 
 # if called directly, for testing purposes pick a random ontology

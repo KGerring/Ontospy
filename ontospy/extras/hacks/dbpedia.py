@@ -27,6 +27,7 @@ python dbpedia.py -o
 
 
 
+
 from sparqlpy import *
 
 __version__ = "0.1"
@@ -36,7 +37,7 @@ __author__ = "Michele Pasin"
 __author_email__ = "michele dot pasin at gmail dot com"
 
 USAGE = "%prog [options]"
-VERSION = "%prog v" + __version__
+VERSION = f'%prog v{__version__}'
 
 AGENT = "%s/%s" % (__name__, __version__)
 

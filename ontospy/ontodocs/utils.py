@@ -33,12 +33,7 @@ def build_D3treeStandard(old, MAX_DEPTH, level=1, toplayer=None):
     if not old:
         old = toplayer
     for x in old:
-        d = {}
-        # print "*" * level, x.label
-        d['qname'] = x.qname
-        # d['name'] = x.bestLabel(quotes=False).replace("_", " ")
-        d['name'] = x.title
-        d['objid'] = x.id
+        d = {'qname': x.qname, 'name': x.title, 'objid': x.id}
         if x.children() and level < MAX_DEPTH:
             d['size'] = len(x.children()) + 5  # fake size
             d['realsize'] = len(x.children())  # real size
@@ -56,9 +51,8 @@ def build_D3treeStandard(old, MAX_DEPTH, level=1, toplayer=None):
 def truncchar_inverse(value, arg):
     if len(value) < arg:
         return value
-    else:
-        x = len(value) - arg
-        return '...' + value[x:]
+    x = len(value) - arg
+    return f'...{value[x:]}'
 
 
 def build_D3bubbleChart(old, MAX_DEPTH, level=1, toplayer=None):
@@ -91,16 +85,13 @@ def build_D3bubbleChart(old, MAX_DEPTH, level=1, toplayer=None):
     if not old:
         old = toplayer
     for x in old:
-        d = {}
-        # print "*" * level, x.label
-        d['qname'] = x.qname
-        # d['name'] = x.bestLabel(quotes=False).replace("_", " ")
-        d['name'] = x.title
-        d['objid'] = x.id
+        d = {'qname': x.qname, 'name': x.title, 'objid': x.id}
         if x.children() and level < MAX_DEPTH:
-            duplicate_row = {}
-            duplicate_row['qname'] = x.qname
-            duplicate_row['name'] = x.bestLabel(quotes=False).replace("_", " ")
+            duplicate_row = {
+                'qname': x.qname,
+                'name': x.bestLabel(quotes=False).replace("_", " "),
+            }
+
             duplicate_row['objid'] = x.id
             duplicate_row['size'] = len(x.children()) + 5  # fake size
             duplicate_row['realsize'] = len(x.children())  # real size

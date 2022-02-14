@@ -40,7 +40,6 @@ class MarkdownViz(VizFactory):
         browser_output_path = self.output_path
 
         if self.ontospy_graph.all_classes:
-
         # BROWSER PAGES - CLASSES ======
             for entity in self.ontospy_graph.all_classes:
                 extra_context = {
@@ -55,7 +54,6 @@ class MarkdownViz(VizFactory):
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
         if self.ontospy_graph.all_properties:
-
         # BROWSER PAGES - PROPERTIES ======
             for entity in self.ontospy_graph.all_properties:
                 extra_context = {
@@ -66,11 +64,10 @@ class MarkdownViz(VizFactory):
                 contents = self._renderTemplate(
                     "markdown/markdown_propinfo.md",
                     extraContext=extra_context)
-                FILE_NAME = entity.slug + ".md"
+                FILE_NAME = f'{entity.slug}.md'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
         if self.ontospy_graph.all_skos_concepts:
-
         # BROWSER PAGES - CONCEPTS ======
             for entity in self.ontospy_graph.all_skos_concepts:
                 extra_context = {
@@ -85,7 +82,6 @@ class MarkdownViz(VizFactory):
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
         if self.ontospy_graph.all_individuals:
-
         # BROWSER PAGES - INDIVIDUALS ======
             for entity in self.ontospy_graph.all_individuals:
                 extra_context = {
@@ -96,7 +92,7 @@ class MarkdownViz(VizFactory):
                 contents = self._renderTemplate(
                     "markdown/markdown_individualinfo.md",
                     extraContext=extra_context)
-                FILE_NAME = entity.slug + ".ms"
+                FILE_NAME = f'{entity.slug}.ms'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
         return main_url

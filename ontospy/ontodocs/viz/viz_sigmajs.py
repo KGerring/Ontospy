@@ -50,9 +50,7 @@ class Dataviz(VizFactory):
         # Ontology - MAIN PAGE
         contents = self._renderTemplate("misc/sigmajs.html", extraContext=extra_context)
         FILE_NAME = "index.html"
-        main_url = self._save2File(contents, FILE_NAME, self.output_path)
-
-        return main_url
+        return self._save2File(contents, FILE_NAME, self.output_path)
 
 
 
@@ -109,12 +107,10 @@ def build_class_json(classes):
             }
             edges.append(temp2)
 
-    result = {
+    return {
             "nodes": nodes ,
             "edges" : edges,
         }
-
-    return result
 
 
 
@@ -156,30 +152,15 @@ def run(graph, save_on_github=False, main_entity=None):
         uri = ontology.uri
     except:
         ontology = None
-        uri = ";".join([s for s in graph.sources])
+        uri = ";".join(list(graph.sources))
 
     # ontotemplate = open("template.html", "r")
-    ontotemplate = open(ONTODOCS_VIZ_TEMPLATES + "sigmajs.html", "r")
+    ontotemplate = open(f'{ONTODOCS_VIZ_TEMPLATES}sigmajs.html', "r")
 
     t = Template(ontotemplate.read())
 
     dict_graph = build_class_json(graph.classes)
     JSON_DATA_CLASSES = json.dumps(dict_graph)
-
-    if False:
-        c_mylist = build_D3treeStandard(0, 99, 1, graph.toplayer_classes)
-        p_mylist = build_D3treeStandard(0, 99, 1, graph.toplayer_properties)
-        s_mylist = build_D3treeStandard(0, 99, 1, graph.toplayer_skos)
-
-        c_total = len(graph.classes)
-        p_total = len(graph.all_properties)
-        s_total = len(graph.all_skos_concepts)
-
-        # hack to make sure that we have a default top level object
-        JSON_DATA_CLASSES = json.dumps({'children' : c_mylist, 'name' : 'owl:Thing', 'id' : "None" })
-        JSON_DATA_PROPERTIES = json.dumps({'children' : p_mylist, 'name' : 'Properties', 'id' : "None" })
-        JSON_DATA_CONCEPTS = json.dumps({'children' : s_mylist, 'name' : 'Concepts', 'id' : "None" })
-
 
     c = Context({
                     "ontology": ontology,

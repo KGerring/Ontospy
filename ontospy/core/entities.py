@@ -78,15 +78,14 @@ class RdfEntity(object):
 
     def rdf_source(self, format="turtle"):
         """ xml, n3, turtle, nt, pretty-xml, trix are built in"""
-        if self.triples:
-            if not self.rdflib_graph:
-                self._buildGraph()
-            s = self.rdflib_graph.serialize(format=format)
-            if isinstance(s, bytes):
-                s = s.decode('utf-8')
-            return s
-        else:
+        if not self.triples:
             return None
+        if not self.rdflib_graph:
+            self._buildGraph()
+        s = self.rdflib_graph.serialize(format=format)
+        if isinstance(s, bytes):
+            s = s.decode('utf-8')
+        return s
 
     def printSerialize(self, format="turtle"):
         printInfo("\n" + self.rdf_source(format))
@@ -95,8 +94,8 @@ class RdfEntity(object):
         """ display triples """
         printInfo(Fore.RED + self.uri + Style.RESET_ALL)
         for x in self.triples:
-            printInfo(Fore.BLACK + "=> " + unicode(x[1]))
-            printInfo(Style.DIM + ".... " + unicode(x[2]) + Fore.RESET)
+            printInfo(f'{Fore.BLACK}=> ' + unicode(x[1]))
+            printInfo(f'{Style.DIM}.... ' + unicode(x[2]) + Fore.RESET)
         printInfo("")
 
     def _build_qname(self, uri=None, namespaces=None):
@@ -124,39 +123,25 @@ class RdfEntity(object):
         """ returns all ancestors in the taxonomy """
         if not cl:
             cl = self
-        if cl.parents():
-            bag = []
-            for x in cl.parents():
-                if x.uri != cl.uri:  # avoid circular relationships
-                    bag += [x] + self.ancestors(x, noduplicates)
-                else:
-                    bag += [x]
-            # finally:
-            if noduplicates:
-                return remove_duplicates(bag)
-            else:
-                return bag
-        else:
+        if not cl.parents():
             return []
+        bag = []
+        for x in cl.parents():
+            bag += [x] + self.ancestors(x, noduplicates) if x.uri != cl.uri else [x]
+            # finally:
+        return remove_duplicates(bag) if noduplicates else bag
 
     def descendants(self, cl=None, noduplicates=True):
         """ returns all descendants in the taxonomy """
         if not cl:
             cl = self
-        if cl.children():
-            bag = []
-            for x in cl.children():
-                if x.uri != cl.uri:  # avoid circular relationships
-                    bag += [x] + self.descendants(x, noduplicates)
-                else:
-                    bag += [x]
-            # finally:
-            if noduplicates:
-                return remove_duplicates(bag)
-            else:
-                return bag
-        else:
+        if not cl.children():
             return []
+        bag = []
+        for x in cl.children():
+            bag += [x] + self.descendants(x, noduplicates) if x.uri != cl.uri else [x]
+            # finally:
+        return remove_duplicates(bag) if noduplicates else bag
 
     def parents(self):
         """wrapper around property"""
@@ -178,7 +163,7 @@ class RdfEntity(object):
             [rdflib.term.URIRef(u'http://www.w3.org/2002/07/owl#Class'),
              rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#Class')]
         """
-        if not type(aPropURIRef) == rdflib.URIRef:
+        if type(aPropURIRef) != rdflib.URIRef:
             aPropURIRef = rdflib.URIRef(aPropURIRef)
         return list(self.rdflib_graph.objects(None, aPropURIRef))
 
@@ -197,13 +182,10 @@ class RdfEntity(object):
 
         if test:
             out = firstStringInList(test, prefLanguage)
-        else:
-            test = self.getValuesForProperty(rdflib.namespace.SKOS.prefLabel)
-            if test:
-                out = firstStringInList(test, prefLanguage)
-            else:
-                if qname_allowed:
-                    out = self.locale
+        elif test := self.getValuesForProperty(rdflib.namespace.SKOS.prefLabel):
+            out = firstStringInList(test, prefLanguage)
+        elif qname_allowed:
+            out = self.locale
 
         if quotes and out:
             return addQuotes(out)
@@ -224,9 +206,7 @@ class RdfEntity(object):
             prefLanguage = self._pref_lang
 
         for pred in test_preds:
-            test = self.getValuesForProperty(pred)
-            # printInfo(str(test), "red")
-            if test:
+            if test := self.getValuesForProperty(pred):
                 if quotes:
                     return addQuotes(joinStringsInList(test, prefLanguage))
                 else:
@@ -344,9 +324,7 @@ class OntoClass(RdfEntity):
 
     @property
     def instances(self):  # = all instances
-        if not self._instances:
-            return []
-        return self._instances
+        return [] if not self._instances else self._instances
 
     def count(self):
         return len(self.instances)

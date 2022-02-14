@@ -4,7 +4,8 @@
 Unit tests shared constants
 """
 
+
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-TEST_RDF_FOLDER = dir_path + "/rdf/"
+TEST_RDF_FOLDER = f'{dir_path}/rdf/'

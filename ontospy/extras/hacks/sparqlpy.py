@@ -51,7 +51,7 @@ __author__ = "Michele Pasin"
 __author_email__ = "michele dot pasin at gmail dot com"
 
 USAGE = "%prog [options] <sparql endpoint url>"
-VERSION = "%prog v" + __version__
+VERSION = f'%prog v{__version__}'
 
 AGENT = "%s/%s" % (__name__, __version__)
 
@@ -153,9 +153,6 @@ class SparqlEndpoint(object):
 
 		if resource_uri.startswith("http://"):
 			resource_uri = "<%s>" % resource_uri
-		else:  # it's a QName
-			pass
-
 		lines = ["PREFIX %s: <%s>" % (k, r) for k, r in self.prefixes.iteritems()]
 		q =  """
 			SELECT *
@@ -215,12 +212,7 @@ class SparqlEndpoint(object):
 		"""
 		self.__getFormat(format)
 		self.sparql.setQuery(query)
-		if convert:
-			results = self.sparql.query().convert()
-		else:
-			results = self.sparql.query()
-
-		return results
+		return self.sparql.query().convert() if convert else self.sparql.query()
 
 
 

@@ -86,11 +86,7 @@ def action_analyze(sources,
         hide_implicit_types = True
         hide_implicit_preds = True
 
-    if individuals:
-        hide_individuals = False
-    else:
-        hide_individuals = True
-
+    hide_individuals = not individuals
     if raw:
         o = Ontospy(
             uri_or_path=sources, 
@@ -159,7 +155,6 @@ def action_jsonld_playground(source_path, verbose=False):
     Util: sends a json-ld file to the awesome https://json-ld.org/playground/
     """
     import webbrowser
-    BASE_URL = "https://json-ld.org/playground/#startTab=tab-expanded&json-ld="
     my_file_handle = None
 
     printDebug("Preparing... : %s" % str(source_path), "comment")
@@ -172,6 +167,7 @@ def action_jsonld_playground(source_path, verbose=False):
 
     if my_file_handle:
 
+        BASE_URL = "https://json-ld.org/playground/#startTab=tab-expanded&json-ld="
         webbrowser.open(BASE_URL + quote(my_file_handle.read()))
 
 
@@ -198,32 +194,29 @@ def action_listlocal(all_details=True):
                 "------------------\nSelect a model by typing its number: (enter=quit)",
                 "important")
             var = input()
-            if var == "" or var == "q":
+            if var in ["", "q"]:
                 return None
-            else:
-                try:
-                    _id = int(var)
-                    ontouri = options[_id - 1]
-                    # printDebug("\nYou selected:", "comment")
-                    printDebug(
-                        "---------\nYou selected: " + ontouri + "\n---------",
-                        "green")
-                    return ontouri
-                except:
-                    printDebug("Please enter a valid option.", "comment")
-                    continue
+            try:
+                _id = int(var)
+                ontouri = options[_id - 1]
+                # printDebug("\nYou selected:", "comment")
+                printDebug(
+                    "---------\nYou selected: " + ontouri + "\n---------",
+                    "green")
+                return ontouri
+            except:
+                printDebug("Please enter a valid option.", "comment")
+                continue
 
 
 def _print2cols_ontologies():
-    ontologies = get_localontologies()
-
-    if ontologies:
+    if ontologies := get_localontologies():
         printDebug("------------", "tip")
-        counter = 0
-        out = []
-        for x in ontologies:
-            counter += 1
-            out += ["[%s] %s" % (str(counter), x)]
+        out = [
+            "[%s] %s" % (str(counter), x)
+            for counter, x in enumerate(ontologies, start=1)
+        ]
+
         pprint2columns(out, max_length=60)
 
 
@@ -241,15 +234,12 @@ def _print_table_ontologies():
         temp = []
         from collections import namedtuple
         Row = namedtuple('Row', ['N', 'Added', 'File'])
-        # Row = namedtuple('Row',['N','Added','Cached', 'File'])
-        counter = 0
-        for file in ontologies:
-            counter += 1
+        for counter, file in enumerate(ontologies, start=1):
             _counter = str(counter)
             # name = Style.BRIGHT + file + Style.RESET_ALL
             name = click.style(file, fg='green')
             try:
-                mtime = os.path.getmtime(ONTOSPY_LOCAL_MODELS + "/" + file)
+                mtime = os.path.getmtime(f'{ONTOSPY_LOCAL_MODELS}/{file}')
             except OSError:
                 mtime = 0
             last_modified_date = str(datetime.datetime.fromtimestamp(mtime))
@@ -291,22 +281,16 @@ def action_import(location, verbose=True):
             filename = location.replace("http://", "").replace("/", "_")
             if not filename.lower().endswith(
                 ('.rdf', '.owl', '.rdfs', '.ttl', '.n3')):
-                filename = filename + ".rdf"
+                filename = f'{filename}.rdf'
             fullpath = ONTOSPY_LOCAL_MODELS + "/" + filename  # 2016-04-08
-            # fullpath = ONTOSPY_LOCAL_MODELS + filename
-
-            # print("==DEBUG", final_location, "**", filename,"**", fullpath)
-
-            file_ = open(fullpath, 'wb')
-            file_.write(res.read())
-            file_.close()
+            with open(fullpath, 'wb') as file_:
+                file_.write(res.read())
         else:
-            if os.path.isfile(location):
-                filename = location.split("/")[-1] or location.split("/")[-2]
-                fullpath = ONTOSPY_LOCAL_MODELS + "/" + filename
-                shutil.copy(location, fullpath)
-            else:
+            if not os.path.isfile(location):
                 raise ValueError('The location specified is not a file.')
+            filename = location.split("/")[-1] or location.split("/")[-2]
+            fullpath = f'{ONTOSPY_LOCAL_MODELS}/{filename}'
+            shutil.copy(location, fullpath)
     except:
         printDebug(
             "Error retrieving file. Please make sure <%s> is a valid location."
@@ -362,19 +346,18 @@ def action_webimport(hrlinetop=False):
         if hrlinetop:
             printDebug("----------")
         text = "Please select which online directory to scan: (enter=quit)\n"
-        for x in DIR_OPTIONS:
-            text += "%d) %s\n" % (x, DIR_OPTIONS[x])
-        var = input(text + "> ")
-        if var == "q" or var == "":
+        for x, value in DIR_OPTIONS.items():
+            text += "%d) %s\n" % (x, value)
+        var = input(f'{text}> ')
+        if var in ["q", ""]:
             return None
-        else:
-            try:
-                selection = int(var)
-                test = DIR_OPTIONS[selection]  #throw exception if number wrong
-                break
-            except:
-                printDebug("Invalid selection. Please try again.", "important")
-                continue
+        try:
+            selection = int(var)
+            test = DIR_OPTIONS[selection]  #throw exception if number wrong
+            break
+        except:
+            printDebug("Invalid selection. Please try again.", "important")
+            continue
 
     printDebug("----------")
     text = "Search for a specific keyword? (enter=show all)\n"
@@ -406,28 +389,32 @@ def _import_LOV(
 
     # pre-filter if necessary
     if keyword:
-        for x in all_options:
-            if keyword in x['uri'].lower() or keyword in x['titles'][0][
-                    'value'].lower() or keyword in x['nsp'].lower():
-                options.append(x)
+        options.extend(
+            x
+            for x in all_options
+            if keyword in x['uri'].lower()
+            or keyword in x['titles'][0]['value'].lower()
+            or keyword in x['nsp'].lower()
+        )
+
     else:
         options = all_options
 
     printDebug("----------\n%d results found.\n----------" % len(options))
 
     if options:
-        # display:
-        counter = 1
-        for x in options:
+        for counter, x in enumerate(options, start=1):
             uri, title, ns = x['uri'], x['titles'][0]['value'], x['nsp']
             # print("%s ==> %s" % (d['titles'][0]['value'], d['uri']))
             printDebug(
-                click.style("[%d]" % counter, fg='blue') +
-                click.style(uri + " ==> ", fg='black') +
-                click.style(title, fg='red'), 
-                err=True)
+                (
+                    click.style("[%d]" % counter, fg='blue')
+                    + click.style(f'{uri} ==> ', fg='black')
+                )
+                + click.style(title, fg='red'),
+                err=True,
+            )
 
-            counter += 1
 
         while True:
             var = input(Style.BRIGHT +
@@ -435,21 +422,20 @@ def _import_LOV(
                         Style.RESET_ALL)
             if var == "q":
                 break
-            else:
-                try:
-                    _id = int(var)
-                    ontouri = options[_id - 1]['uri']
-                    printDebug(Fore.RED + "\n---------\n" + ontouri +
-                          "\n---------" + Style.RESET_ALL)
-                    action_analyze([ontouri])
-                    if click.confirm(
-                            '=====\nDo you want to save to your local library?'
-                    ):
-                        action_import(ontouri)
-                    return
-                except:
-                    printDebug("Error retrieving file. Import failed.")
-                    continue
+            try:
+                _id = int(var)
+                ontouri = options[_id - 1]['uri']
+                printDebug(Fore.RED + "\n---------\n" + ontouri +
+                      "\n---------" + Style.RESET_ALL)
+                action_analyze([ontouri])
+                if click.confirm(
+                        '=====\nDo you want to save to your local library?'
+                ):
+                    action_import(ontouri)
+                return
+            except:
+                printDebug("Error retrieving file. Import failed.")
+                continue
 
 
 def _import_PREFIXCC(keyword=""):
@@ -474,49 +460,42 @@ def _import_PREFIXCC(keyword=""):
 
     printDebug("----------\n%d results found." % len(options))
 
-    counter = 1
-    for x in options:
+    for counter, x in enumerate(options, start=1):
         printDebug(Fore.BLUE + Style.BRIGHT + "[%d]" % counter +
               Style.RESET_ALL + x[0] + " ==> " + Fore.RED + x[1] + 
               Style.RESET_ALL)
-        # printDebug(Fore.BLUE + x[0] + " ==> " + x[1])
-        counter += 1
-
     while True:
         var = input(Style.BRIGHT + "=====\nSelect ID to import: (q=quit)\n" +
                     Style.RESET_ALL)
         if var == "q":
             break
-        else:
-            try:
-                _id = int(var)
-                ontouri = options[_id - 1][1]
-                printDebug(Fore.RED + "\n---------\n" + ontouri + "\n---------" +
-                      Style.RESET_ALL)
-                action_analyze([ontouri])
-                if click.confirm(
-                        '=====\nDo you want to save to your local library?'):
-                    action_import(ontouri)
-                return
-            except:
-                printDebug("Error retrieving file. Import failed.")
-                continue
+        try:
+            _id = int(var)
+            ontouri = options[_id - 1][1]
+            printDebug(Fore.RED + "\n---------\n" + ontouri + "\n---------" +
+                  Style.RESET_ALL)
+            action_analyze([ontouri])
+            if click.confirm(
+                    '=====\nDo you want to save to your local library?'):
+                action_import(ontouri)
+            return
+        except:
+            printDebug("Error retrieving file. Import failed.")
+            continue
 
 
 def action_bootstrap(verbose=False):
     """Bootstrap the local REPO with a few cool ontologies"""
     printDebug("The following ontologies will be imported:")
     printDebug("--------------")
-    count = 0
-    for s in BOOTSTRAP_ONTOLOGIES:
-        count += 1
+    for count, s in enumerate(BOOTSTRAP_ONTOLOGIES, start=1):
         printInfo(count, "<%s>" % s)
 
     printDebug("--------------")
     printDebug("Note: this operation may take several minutes.")
     printDebug("Proceed? [Y/N]")
     var = input()
-    if var == "y" or var == "Y":
+    if var in ["y", "Y"]:
         for uri in BOOTSTRAP_ONTOLOGIES:
             try:
                 printDebug("--------------")
@@ -546,22 +525,20 @@ def action_update_library_location(_location):
 
     printDebug("Old location: '%s'" % get_home_location(), "comment")
 
-    if os.path.isdir(_location):
-
-        config = SafeConfigParser()
-        config_filename = ONTOSPY_LOCAL + '/config.ini'
-        config.read(config_filename)
-        if not config.has_section('models'):
-            config.add_section('models')
-
-        config.set('models', 'dir', _location)
-        with open(config_filename, 'w') as f:
-            config.write(
-                f)  # note: this does not remove previously saved settings
-
-        return _location
-    else:
+    if not os.path.isdir(_location):
         return None
+    config = SafeConfigParser()
+    config_filename = f'{ONTOSPY_LOCAL}/config.ini'
+    config.read(config_filename)
+    if not config.has_section('models'):
+        config.add_section('models')
+
+    config.set('models', 'dir', _location)
+    with open(config_filename, 'w') as f:
+        config.write(
+            f)  # note: this does not remove previously saved settings
+
+    return _location
 
 
 def action_cache_reset():
@@ -586,7 +563,7 @@ def action_cache_reset():
               "\n=====\n%d ontologies available in the local library\n=====" %
               len(repo_contents) + Style.RESET_ALL)
         for onto in repo_contents:
-            fullpath = ONTOSPY_LOCAL_MODELS + "/" + onto
+            fullpath = f'{ONTOSPY_LOCAL_MODELS}/{onto}'
             try:
                 printInfo(Fore.RED + "\n=====\n" + onto + Style.RESET_ALL)
                 printInfo("Loading graph...")
@@ -602,7 +579,7 @@ def action_cache_reset():
                 printInfo("Caching...")
                 do_pickle_ontology(onto, g)
 
-        printDebug(Style.BRIGHT + "===Completed===" + Style.RESET_ALL)
+        printDebug(f'{Style.BRIGHT}===Completed==={Style.RESET_ALL}')
 
     else:
         printDebug("Goodbye")
@@ -683,11 +660,7 @@ def action_visualize(args,
         hide_implicit_types = True
         hide_implicit_preds = True
 
-    if individuals:
-        hide_individuals = False
-    else:
-        hide_individuals = True
-
+    hide_individuals = not individuals
     # select a visualization
     if viztype:
         viztype = select_visualization(viztype)
@@ -717,12 +690,10 @@ def action_visualize(args,
         home = expanduser("~")
         onto_path = slugify(unicode(ontouri))
         viz_path = slugify(unicode(VISUALIZATIONS_LIST[viztype]['Title']))
-        path = os.path.join(home, "ontospy-viz/" + onto_path + "/" + viz_path)
+        path = os.path.join(home, f'ontospy-viz/{onto_path}/{viz_path}')
         if not os.path.exists(path):
             os.makedirs(path)
 
     # url  = build_viz(ontouri, g, viztype, path)
     printDebug("Building visualization...", dim=True)
-    url = build_visualization(ontouri, g, viztype, path, title, theme)
-
-    return url
+    return build_visualization(ontouri, g, viztype, path, title, theme)

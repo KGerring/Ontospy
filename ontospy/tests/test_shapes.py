@@ -74,8 +74,6 @@ class TestShapes(unittest.TestCase):
 					for x in c.shapedProperties:
 						print(".....hasProperty: " + str(x["property"]))
 						print("     the property has %s associated shapes." % x["shape"])
-				else:
-					pass
 
 
 

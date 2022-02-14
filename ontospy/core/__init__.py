@@ -48,7 +48,7 @@ _dirname, _filename = os.path.split(os.path.abspath(__file__))
 # local repository constants
 ONTOSPY_LOCAL = os.path.join(os.path.expanduser('~'), '.ontospy')
 ONTOSPY_LOCAL_CACHE = ONTOSPY_LOCAL + "/.cache/" + VERSION
-ONTOSPY_LOCAL_CACHE_TOP = ONTOSPY_LOCAL + "/.cache/"
+ONTOSPY_LOCAL_CACHE_TOP = f'{ONTOSPY_LOCAL}/.cache/'
 
 ONTOSPY_LIBRARY_DEFAULT = ONTOSPY_LOCAL + "/models/"
 

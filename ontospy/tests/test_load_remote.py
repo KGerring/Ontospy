@@ -31,7 +31,7 @@ class TestLoadOntologies(unittest.TestCase):
 		Check if the ontologies in BOOTSTRAP list load ok
 		"""
 		MAX = 1
-		ONTOS = [o for o in BOOTSTRAP_ONTOLOGIES[:MAX]]
+		ONTOS = list(BOOTSTRAP_ONTOLOGIES[:MAX])
 
 		printDebug(f"""\n=================\n
 		\nTEST 2: Loading some sample online ontologies => 
@@ -54,9 +54,6 @@ class TestLoadOntologies(unittest.TestCase):
 
 			except:
 				printDebug("An error occured - are you sure this resource is online?")
-				pass
-
-
 			print("Success.\n")
 
 

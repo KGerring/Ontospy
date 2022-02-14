@@ -78,7 +78,7 @@ class KompleteViz(VizFactory):
                                 }
                 extra_context.update(self.highlight_code(entity))
                 contents = self._renderTemplate("html-multi/browser/browser_classinfo.html", extraContext=extra_context)
-                FILE_NAME = entity.slug + ".html"
+                FILE_NAME = f'{entity.slug}.html'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
 
@@ -102,7 +102,7 @@ class KompleteViz(VizFactory):
                                 }
                 extra_context.update(self.highlight_code(entity))
                 contents = self._renderTemplate("html-multi/browser/browser_propinfo.html", extraContext=extra_context)
-                FILE_NAME = entity.slug + ".html"
+                FILE_NAME = f'{entity.slug}.html'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
 
@@ -127,7 +127,7 @@ class KompleteViz(VizFactory):
                                 }
                 extra_context.update(self.highlight_code(entity))
                 contents = self._renderTemplate("html-multi/browser/browser_conceptinfo.html", extraContext=extra_context)
-                FILE_NAME = entity.slug + ".html"
+                FILE_NAME = f'{entity.slug}.html'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
 
@@ -151,7 +151,7 @@ class KompleteViz(VizFactory):
                                 }
                 extra_context.update(self.highlight_code(entity))
                 contents = self._renderTemplate("html-multi/browser/browser_shapeinfo.html", extraContext=extra_context)
-                FILE_NAME = entity.slug + ".html"
+                FILE_NAME = f'{entity.slug}.html'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
 
@@ -168,7 +168,7 @@ class KompleteViz(VizFactory):
             contents = self._renderTemplate("html-multi/browser/browser_entities_tree.html", extraContext=extra_context)
             FILE_NAME = "entities-tree-individuals.html"
             self._save2File(contents, FILE_NAME, browser_output_path)
-            
+
             # BROWSER PAGES - CLASSES ======
             for entity in self.ontospy_graph.all_individuals:
                 extra_context = {"main_entity": entity,
@@ -180,7 +180,7 @@ class KompleteViz(VizFactory):
                 contents = self._renderTemplate(
                         "html-multi/browser/browser_individualinfo.html",
                         extraContext=extra_context)
-                FILE_NAME = entity.slug + ".html"
+                FILE_NAME = f'{entity.slug}.html'
                 self._save2File(contents, FILE_NAME, browser_output_path)
 
 

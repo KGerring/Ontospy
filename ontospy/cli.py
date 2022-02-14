@@ -118,7 +118,7 @@ Ontospy allows to extract and visualise ontology information included in RDF dat
     ctx.obj['VERBOSE'] = verbose
     ctx.obj['STIME'] = sTime
 
-    printDebug("Ontospy " + VERSION, "comment")
+    printDebug(f'Ontospy {VERSION}', "comment")
     if not verbose and ctx.invoked_subcommand is None:
         printDebug(ctx.get_help())
     # else:
@@ -177,7 +177,7 @@ def scan(ctx, sources=None, endpoint=False, raw=False, extra=False, individuals=
 
     if format and not validate_format_string(format):
         return
-    if sources or (sources and endpoint):
+    if sources:
         action_analyze(sources, endpoint, print_opts, verbose, extra, raw, individuals, format)
         eTime = time.time()
         tTime = eTime - sTime
@@ -308,12 +308,13 @@ def gendocs(ctx,
             fg="red")
         preflabel = "qname"
 
-    if outputpath:
-        if not (os.path.exists(outputpath)) or not (os.path.isdir(outputpath)):
-            printDebug(
-                "WARNING: the -o option must include a valid directory path.",
-                fg="red")
-            sys.exit(0)
+    if outputpath and (
+        not (os.path.exists(outputpath)) or not (os.path.isdir(outputpath))
+    ):
+        printDebug(
+            "WARNING: the -o option must include a valid directory path.",
+            fg="red")
+        sys.exit(0)
 
     if source and len(source) > 1:
         printDebug(
@@ -321,8 +322,7 @@ def gendocs(ctx,
 
     if lib:
         printDebug("Local library => '%s'" % get_home_location(), fg='white')
-        ontouri = action_listlocal(all_details=False)
-        if ontouri:
+        if ontouri := action_listlocal(all_details=False):
             source = [os.path.join(get_home_location(), ontouri)]
         else:
             raise SystemExit(1)
@@ -454,8 +454,7 @@ def lib(ctx,
             if _location.endswith("/"):
                 # dont need the final slash
                 _location = _location[:-1]
-            output = action_update_library_location(_location)
-            if output:
+            if output := action_update_library_location(_location):
                 printDebug(
                     "Note: no files have been moved or deleted (this has to be done manually)",
                     "comment")
@@ -484,9 +483,7 @@ def lib(ctx,
 
     elif show:
         printDebug("Local library => '%s'" % get_home_location(), fg='white')
-        filename = action_listlocal(all_details=False)
-
-        if filename:
+        if filename := action_listlocal(all_details=False):
             DONE_ACTION = True
             g = get_pickled_ontology(filename)
             if not g:
@@ -547,14 +544,21 @@ def ser(ctx, source, output_format, verbose=False):
     else:
         if not validate_format_string(output_format):
             return
-        else:
-            action_serialize(source, output_format, verbose)
-            eTime = time.time()
-            tTime = eTime - sTime
-            printDebug(
-                "\n-----------\n" + "Serialized <%s> to '%s'" %
-                (" ".join([x for x in source]), output_format), "comment")
-            printDebug("Time:	   %0.2fs" % tTime, "comment")
+        action_serialize(source, output_format, verbose)
+        eTime = time.time()
+        tTime = eTime - sTime
+        printDebug(
+            (
+                "\n-----------\n"
+                + (
+                    "Serialized <%s> to '%s'"
+                    % (" ".join(list(source)), output_format)
+                )
+            ),
+            "comment",
+        )
+
+        printDebug("Time:	   %0.2fs" % tTime, "comment")
 
 
 ##

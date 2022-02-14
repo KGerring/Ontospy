@@ -13,6 +13,7 @@ python compare.py -o http://xmlns.com/foaf/0.1/ test/testTurtle.ttl
 
 
 
+
 import sys, time, math, optparse, os
 
 try:
@@ -36,7 +37,7 @@ __author__ = "Michele Pasin"
 __author_email__ = "michele dot pasin at gmail dot com"
 
 USAGE = "%prog -o masterOntology graph_to_validate`"
-VERSION = "%prog v" + __version__
+VERSION = f'%prog v{__version__}'
 
 AGENT = "%s/%s" % (__name__, __version__)
 
@@ -53,21 +54,11 @@ def compare(referenceOnto, somegraph):
 	spy1 = Ontology(referenceOnto)
 	spy2 = Ontology(somegraph)
 
-	class_comparison = {}
-	for x in spy2.allclasses:
-		if x not in spy1.allclasses:
-			class_comparison[x] = False
-		else:
-			class_comparison[x] = True
-
-	prop_comparison = {}
-	for x in spy2.allinferredproperties:
-		if x not in spy1.allinferredproperties:
-			prop_comparison[x] = False
-		else:
-			prop_comparison[x] = True
-
-
+	class_comparison = {x: x in spy1.allclasses for x in spy2.allclasses}
+	prop_comparison = {
+	    x: x in spy1.allinferredproperties
+	    for x in spy2.allinferredproperties
+	}
 	return {'stats' : {	'classes': len(spy2.allclasses),
 						'properties' : len(spy2.allinferredproperties),
 						'triples' : len(spy2.rdflib_graph)},
@@ -82,13 +73,9 @@ def printComparison(results, class_or_prop):
 	print(out the results of the comparison using a nice table)
 	"""
 
-	data = []
-
 	Row = namedtuple('Row',[class_or_prop,'VALIDATED'])
 
-	for k,v in sorted(results.items(), key=lambda x: x[1]):
-		data += [Row(k, str(v))]
-
+	data = [Row(k, str(v)) for k,v in sorted(results.items(), key=lambda x: x[1])]
 	pprinttable(data)
 
 

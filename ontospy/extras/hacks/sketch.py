@@ -81,9 +81,8 @@ class Sketch(object):
 		if not text and default_continuousAdd:
 			self.continuousAdd()
 		else:
-			pprefix = ""
-			for x,y in self.rdflib_graph.namespaces():
-				pprefix += "@prefix %s: <%s> . \n" % (x, y)
+			pprefix = "".join("@prefix %s: <%s> . \n" % (x, y)
+			                  for x, y in self.rdflib_graph.namespaces())
 			# add final . if missing
 			if text and (not text.strip().endswith(".")):
 				text += " ."
@@ -139,9 +138,11 @@ class Sketch(object):
 			 b -> d [label=isA];
 		 }
 		"""
-		temp = ""
-		for x,y,z in self.rdflib_graph.triples((None, None, None)):
-			temp += """"%s" -> "%s" [label="%s"];\n""" % (self.namespace_manager.normalizeUri(x), self.namespace_manager.normalizeUri(z), self.namespace_manager.normalizeUri(y))
+		temp = "".join(""""%s" -> "%s" [label="%s"];\n""" % (
+		    self.namespace_manager.normalizeUri(x),
+		    self.namespace_manager.normalizeUri(z),
+		    self.namespace_manager.normalizeUri(y),
+		) for x, y, z in self.rdflib_graph.triples((None, None, None)))
 		temp = "digraph graphname {\n%s}" % temp
 		return temp
 
@@ -153,7 +154,7 @@ class Sketch(object):
 		try:  # try to put in the user/tmp folder
 			from os.path import expanduser
 			home = expanduser("~")
-			filename = home + "/tmp/turtle_sketch.dot"
+			filename = f'{home}/tmp/turtle_sketch.dot'
 			f = open(filename, "w")
 		except:
 			filename = "turtle_sketch.dot"
@@ -161,7 +162,7 @@ class Sketch(object):
 		f.write(temp)
 		f.close()
 		try:
-			os.system("open " + filename)
+			os.system(f'open {filename}')
 		except:
 			os.system("start " + filename)
 

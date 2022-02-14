@@ -95,9 +95,8 @@ def main(database):
         elif text == "show":
             # print highlight(code, PythonLexer())
             print("You said \n---\n" + highlight(buffer, TurtleLexer(), Terminal256Formatter()) + "---")
-        else:
-            if text:
-                buffer += text + "\n"
+        elif text:
+            buffer += text + "\n"
 
 
     print('GoodBye!')
@@ -105,10 +104,5 @@ def main(database):
 if __name__ == '__main__':
     clear_screen()
     print("Initiating...")
-    if len(sys.argv) < 2:
-        # not relevant anymore.. but left here for ideas..
-        db = ':memory:'
-    else:
-        db = sys.argv[1]
-
+    db = ':memory:' if len(sys.argv) < 2 else sys.argv[1]
     main(db)

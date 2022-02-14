@@ -44,8 +44,7 @@ class TestSparqlStore(unittest.TestCase):
 
         print(o), print("---------")
 
-        q = o.query("select distinct ?b where {?x a ?b} limit 10")
-        if q:
+        if q := o.query("select distinct ?b where {?x a ?b} limit 10"):
             for el in q:
                 print(el)
         else:

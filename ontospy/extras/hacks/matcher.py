@@ -156,7 +156,7 @@ def parse_options():
 def main():
 	""" command line script """
 
-	print("Ontospy " + ontospy.VERSION)
+	print(f'Ontospy {ontospy.VERSION}')
 	ontospy.get_or_create_home_repo()
 
 	opts, args = parse_options()
@@ -166,25 +166,19 @@ def main():
 		sys.exit(0)
 
 	var = input("Match classes or properties? [c|p, c=default]:")
-	if var == "c":
-		class_or_prop = "classes"
-	elif var == "p":
-		class_or_prop = "properties"
-	else:
-		class_or_prop = "classes"
-
+	class_or_prop = "properties" if var == "p" else "classes"
 	print(class_or_prop)
 
 	var = input("Degree of confidence? [1-10, 5=default]: ")
 	try:
 		confidence = int(var)
-		if not (confidence <= 10 and confidence >= 1):
+		if confidence > 10 or confidence < 1:
 			confidence = 5
 	except:
 		confidence = 5
 
 	print(confidence)
-	confidence = confidence / (10 * 1.0) #transform in decimal
+	confidence /= 10 * 1.0
 
 	sTime = time.time()
 

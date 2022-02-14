@@ -65,14 +65,10 @@ class RDFLoader(object):
 
     def load(self, uri_or_path=None, data=None, file_obj=None, rdf_format=""):
 
-        if not rdf_format:
-            self.rdf_format_opts = self.SERIALIZATIONS
-        else:
-            self.rdf_format_opts = [rdf_format]
-
+        self.rdf_format_opts = self.SERIALIZATIONS if not rdf_format else [rdf_format]
         # URI OR PATH
         if uri_or_path:
-            if not type(uri_or_path) in [list, tuple]:
+            if type(uri_or_path) not in [list, tuple]:
                 uri_or_path = [uri_or_path]
             for candidate in uri_or_path:
                 if os.path.isdir(candidate):
@@ -89,16 +85,14 @@ class RDFLoader(object):
                     uri = self.resolve_redirects_if_needed(each)
                     self.load_uri(uri)
 
-        # DATA STRING
         elif data:
-            if not type(data) in [list, tuple]:
+            if type(data) not in [list, tuple]:
                 data = [data]
             for each in data:
                 self.load_data(each)
 
-        # FILE OBJECT
         elif file_obj:
-            if not type(file_obj) in [list, tuple]:
+            if type(file_obj) not in [list, tuple]:
                 file_obj = [file_obj]
             for each in file_obj:
                 self.load_file(each)
@@ -151,7 +145,7 @@ class RDFLoader(object):
                 if self.verbose: printDebug("..... failed")
                 # self._debugGraph()
 
-        if not success == True:
+        if not success:
             self.loading_failed(sorted_fmt_opts, uri=uri)
             self.sources_invalid += [uri]
 
@@ -180,7 +174,7 @@ class RDFLoader(object):
             except:
                 if self.verbose: printDebug("..... failed", "error")
 
-        if not success == True:
+        if not success:
             self.loading_failed(self.rdf_format_opts)
             self.sources_invalid += ["Data: '%s ...'" % data[:10]]
 
@@ -205,19 +199,17 @@ class RDFLoader(object):
         :param uri:
         :return:
         """
-        if type(uri) == type("string") or type(uri) == type(u"unicode"):
-
-            if uri.startswith("www."):  # support for lazy people
-                uri = "http://%s" % str(uri)
-            if uri.startswith("http://"):
-                # headers = "Accept: application/rdf+xml"  # old way
-                headers = {'Accept': "application/rdf+xml"}
-                req = urllib2.Request(uri, headers=headers)
-                res = urllib2.urlopen(req)
-                uri = res.geturl()
-
-        else:
+        if type(uri) not in [type("string"), type(u"unicode")]:
             raise Exception("A URI must be in string format.")
+
+        if uri.startswith("www."):  # support for lazy people
+            uri = "http://%s" % str(uri)
+        if uri.startswith("http://"):
+            # headers = "Accept: application/rdf+xml"  # old way
+            headers = {'Accept': "application/rdf+xml"}
+            req = urllib2.Request(uri, headers=headers)
+            res = urllib2.urlopen(req)
+            uri = res.geturl()
 
         return uri
 
@@ -247,7 +239,7 @@ class RDFLoader(object):
                 (len(self.sources_invalid)),
                 fg='red')
             for s in self.sources_invalid:
-                printDebug("-> " + s, fg="red")
+                printDebug(f'-> {s}', fg="red")
 
     def loading_failed(self, rdf_format_opts, uri=""):
         """default message if we need to abort loading"""

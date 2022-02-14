@@ -4,7 +4,7 @@
 #
 
 from .. import * # import main ontospy VERSION 
-from ..core.utils import *  
+from ..core.utils import *
 from .builder import ONTODOCS_VIZ_TEMPLATES, ONTODOCS_VIZ_STATIC
 from .utils import *
 
@@ -23,11 +23,9 @@ from distutils.version import StrictVersion
 
 if StrictVersion(django.get_version()) > StrictVersion('1.7'):
     from django.conf import settings
-    from django.template import Context, Template
-
 else:
     from django.conf import settings
-    from django.template import Context, Template
+from django.template import Context, Template
 
 import zipfile
 import os, sys
@@ -107,8 +105,7 @@ class VizFactory(object):
         contents = self._renderTemplate(self.template_name, extraContext=None)
         # the main url used for opening viz
         f = self.main_file_name
-        main_url = self._save2File(contents, f, self.output_path)
-        return main_url
+        return self._save2File(contents, f, self.output_path)
 
     def _renderTemplate(self, template_name, extraContext=None):
         """
@@ -122,8 +119,7 @@ class VizFactory(object):
         context = Context(self.basic_context_data)
         if extraContext and type(extraContext) == dict:
             context.update(extraContext)
-        contents = safe_str(t.render(context))
-        return contents
+        return safe_str(t.render(context))
 
     def _buildStaticFiles(self):
         """ move over static files so that relative imports work
@@ -178,7 +174,7 @@ class VizFactory(object):
         if not self.static_url:
             self.static_url = "static/"  # default
 
-        context_data = {
+        return {
             "STATIC_URL": self.static_url,
             "ontodocs_version": VERSION,
             "ontospy_graph": self.ontospy_graph,
@@ -198,15 +194,11 @@ class VizFactory(object):
             "individuals": self.ontospy_graph.all_individuals,
         }
 
-        return context_data
-
     def _save2File(self, contents, filename, path):
         filename = os.path.join(path, filename)
-        f = open(filename, 'wb')
-        f.write(contents)  # python will convert \n to os.linesep
-        f.close()  # you can omit in most cases as the destructor will call it
-        url = "file://" + filename
-        return url
+        with open(filename, 'wb') as f:
+            f.write(contents)  # python will convert \n to os.linesep
+        return f'file://{filename}'
 
     def checkOutputPath(self, output_path):
         """

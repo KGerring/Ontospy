@@ -30,35 +30,32 @@ def main(test_number):
 
 
 	if test_number == 1:
-
 		print("=================\n*** QUICK TEST 1 ***\n=================\n")
 
-		f = TEST_RDF_FOLDER + "paper.jsonld"
+		f = f'{TEST_RDF_FOLDER}paper.jsonld'
 
 		o = Ontospy(f, verbose=True, rdf_format="json-ld", hide_implicit_types=False, hide_base_schemas=False, hide_implicit_preds=False)
 		print(f)			
 
 
 
-	if test_number == 2:
-
+	elif test_number == 2:
 		print("=================\n*** QUICK TEST 2 ***\n=================\n")
 
 		uri, title = "http://examples.com", "My ontology"
-		printDebug(click.style("[%d]" % 1, fg='blue') +
-				click.style(uri + " ==> ", fg='black') +
-				click.style(title, fg='red'))
+		printDebug((click.style("[%d]" % 1, fg='blue') +
+		            click.style(f'{uri} ==> ', fg='black')) +
+		           click.style(title, fg='red'))
 
 
 		from colorama import Fore, Style
 
 		printDebug(Fore.BLUE + Style.BRIGHT + "[%d]" % 1 + 
-              Style.RESET_ALL + uri + " ==> " + Fore.RED + title + 
-              Style.RESET_ALL)
+		Style.RESET_ALL + uri + " ==> " + Fore.RED + title + 
+		Style.RESET_ALL)
 
 
-	if test_number == 3:
-
+	elif test_number == 3:
 		print("=================\n*** QUICK TEST 1 ***\n=================\n")
 
 		f = TEST_RDF_FOLDER + "pizza.ttl"
