@@ -9,33 +9,36 @@ An attempt to build a Turtle console using python-prompt-toolking
 """
 
 
-from __future__ import unicode_literals
 import sys
 
-from prompt_toolkit import AbortAction, prompt
+from prompt_toolkit import AbortAction
+from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.styles import style_from_dict
-
 from pygments import highlight
-from pygments.lexers.rdf import TurtleLexer
 from pygments.formatters import Terminal256Formatter
+
+from pygments.lexers.rdf import TurtleLexer
 from pygments.style import Style
 from pygments.styles.default import DefaultStyle
 from pygments.token import Token
 
 from ..core import ontospy
-from .vocabsturtleprompt import rdfschema, rdfsschema, owlschema
-
+from .vocabsturtleprompt import owlschema
+from .vocabsturtleprompt import rdfschema
+from .vocabsturtleprompt import rdfsschema
 
 
 def clear_screen():
-    import os, platform
+    import os
+    import platform
+
     """ http://stackoverflow.com/questions/18937058/python-clear-screen-in-shell """
     if platform.system() == "Windows":
-        tmp = os.system('cls') #for window
+        tmp = os.system("cls")  # for window
     else:
-        tmp = os.system('clear') #for Linux
+        tmp = os.system("clear")  # for Linux
     return True
 
 
@@ -44,31 +47,43 @@ def get_default_preds():
     g = ontospy.Ontospy(rdfsschema, text=True, verbose=False, hide_base_schemas=False)
     classes = [(x.qname, x.bestDescription()) for x in g.all_classes]
     properties = [(x.qname, x.bestDescription()) for x in g.all_properties]
-    commands = [('exit', 'exits the terminal'), ('show', 'show current buffer')]
+    commands = [("exit", "exits the terminal"), ("show", "show current buffer")]
     return rdfschema + owlschema + classes + properties + commands
 
-turtle_completer = WordCompleter([x[0] for x in get_default_preds()], ignore_case=True, WORD=True)
+
+turtle_completer = WordCompleter(
+    [x[0] for x in get_default_preds()], ignore_case=True, WORD=True
+)
 
 
 # BOTTOM TOOLBAR
 
+
 def get_bottom_toolbar_tokens(cli):
     # TIP: in order to analyze current text:
     # t = cli.current_buffer.document.current_line
-    return [(Token.Toolbar, "Please enter some Turtle. [TIP: esc|meta + enter to submit / 'exit' = exit]" )]
+    return [
+        (
+            Token.Toolbar,
+            "Please enter some Turtle. [TIP: esc|meta + enter to submit / 'exit' = exit]",
+        )
+    ]
 
-style = style_from_dict({
-    Token.Toolbar: '#ffffff bg:#333333',
-})
+
+style = style_from_dict(
+    {
+        Token.Toolbar: "#ffffff bg:#333333",
+    }
+)
 
 
 class DocumentStyle(Style):
     styles = {
-        Token.Menu.Completions.Completion.Current: 'bg:#00aaaa #000000',
-        Token.Menu.Completions.Completion: 'bg:#008888 #ffffff',
-        Token.Menu.Completions.ProgressButton: 'bg:#003333',
-        Token.Menu.Completions.ProgressBar: 'bg:#00aaaa',
-        Token.Toolbar: '#ffffff bg:#333333',
+        Token.Menu.Completions.Completion.Current: "bg:#00aaaa #000000",
+        Token.Menu.Completions.Completion: "bg:#008888 #ffffff",
+        Token.Menu.Completions.ProgressButton: "bg:#003333",
+        Token.Menu.Completions.ProgressBar: "bg:#00aaaa",
+        Token.Toolbar: "#ffffff bg:#333333",
     }
     styles.update(DefaultStyle.styles)
 
@@ -80,13 +95,18 @@ def main(database):
 
     while True:
         try:
-            text = prompt('> ', lexer=TurtleLexer, completer=turtle_completer,
-                          display_completions_in_columns=False,
-                          complete_while_typing=False,
-                          # multiline=True,
-                          get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
-                          style=DocumentStyle, history=history,
-                          on_abort=AbortAction.RETRY)
+            text = prompt(
+                "> ",
+                lexer=TurtleLexer,
+                completer=turtle_completer,
+                display_completions_in_columns=False,
+                complete_while_typing=False,
+                # multiline=True,
+                get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
+                style=DocumentStyle,
+                history=history,
+                on_abort=AbortAction.RETRY,
+            )
         except EOFError:
             break  # Control-D pressed.
 
@@ -94,20 +114,26 @@ def main(database):
             break
         elif text == "show":
             # print highlight(code, PythonLexer())
-            print("You said \n---\n" + highlight(buffer, TurtleLexer(), Terminal256Formatter()) + "---")
+            print(
+                (
+                    "You said \n---\n"
+                    + highlight(buffer, TurtleLexer(), Terminal256Formatter())
+                    + "---"
+                )
+            )
         else:
             if text:
                 buffer += text + "\n"
 
+    print("GoodBye!")
 
-    print('GoodBye!')
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     clear_screen()
     print("Initiating...")
     if len(sys.argv) < 2:
         # not relevant anymore.. but left here for ideas..
-        db = ':memory:'
+        db = ":memory:"
     else:
         db = sys.argv[1]
 

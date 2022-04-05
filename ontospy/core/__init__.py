@@ -1,21 +1,25 @@
 # !/usr/bin/env python
 #  -*- coding: UTF-8 -*-
-
-from __future__ import print_function
-
-from ..VERSION import __version__, VERSION
+# /Users/kristen/_tmp/Ontospy/ontospy/core/__init__.py
 
 import logging
+import os
+import sys
+
+from ..VERSION import VERSION
+from ..VERSION import __version__
+from .ontospy import Ontospy
+from .utils import printDebug
+
 logging.basicConfig()
 
 try:
-    from ConfigParser import SafeConfigParser
+    from configparser import SafeConfigParser
 except ImportError:
     from configparser import SafeConfigParser
 
-import sys, os
 try:
-    import cPickle
+    import pickle
 except ImportError:
     import pickle as cPickle
 
@@ -25,8 +29,6 @@ try:
 except NameError:
     pass
 
-from .ontospy import Ontospy
-from .utils import printDebug
 
 # ===========
 # ***
@@ -46,7 +48,8 @@ GLOBAL_DISABLE_CACHE = False
 _dirname, _filename = os.path.split(os.path.abspath(__file__))
 
 # local repository constants
-ONTOSPY_LOCAL = os.path.join(os.path.expanduser('~'), '.ontospy')
+ONTOSPY_LOCAL = os.path.join(os.path.expanduser("~"), ".ontospy")
+
 ONTOSPY_LOCAL_CACHE = ONTOSPY_LOCAL + "/.cache/" + VERSION
 ONTOSPY_LOCAL_CACHE_TOP = ONTOSPY_LOCAL + "/.cache/"
 
@@ -67,12 +70,34 @@ BOOTSTRAP_ONTOLOGIES = [
     # "http://purl.uniprot.org/core/",
     # "http://purl.org/spar/cito/",
     # "http://ns.nature.com/terms/",
+    # '/Users/kristen/_tmp/Ontospy/ontospy/tests/rdf/scigraph/articles.dds.ttl'
 ]
 
 # sample endpoints
 BOOTSTRAP_ENDPOINTS = [
-    "http://dbpedia.org/sparql", 
+    "http://dbpedia.org/sparql",
     "http://data.semanticweb.org/sparql",
-    "http://linkedgeodata.org/sparql", 
-    "http://sparql.data.southampton.ac.uk/"
+    "http://linkedgeodata.org/sparql",
+    "http://sparql.data.southampton.ac.uk/",
 ]
+
+
+import rdflib.namespace, rdflib.extras, rdflib.plugins, rdflib.tools
+    #tools
+
+
+__all__ = sorted(
+        [
+                getattr(v, "__name__", k)
+                for k, v in list(globals().items())  # export
+                if (
+                (
+                        callable(v)
+                        and getattr(v, "__module__", "")
+                        == __name__  # callables from this module
+                        or k.isupper()
+                )
+                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
+        )
+        ]
+)  # neither marked internal

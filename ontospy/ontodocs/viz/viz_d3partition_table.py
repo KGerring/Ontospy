@@ -1,11 +1,13 @@
 # !/usr/bin/env python
 #  -*- coding: UTF-8 -*-
 
-import os, sys
-import json
 
-from ..utils import *
+import json
+import os
+import sys
+
 from ..builder import *  # loads and sets up Django
+from ..utils import *
 from ..viz_factory import VizFactory
 
 # ===========
@@ -32,23 +34,27 @@ class Dataviz(VizFactory):
         """
 
         jsontree_classes = build_D3treeStandard(
-            0, 99, 1, self.ontospy_graph.toplayer_classes)
+            0, 99, 1, self.ontospy_graph.toplayer_classes
+        )
         c_total = len(self.ontospy_graph.all_classes)
 
-        JSON_DATA_CLASSES = json.dumps({
-            'children': jsontree_classes,
-            'name': 'owl:Thing',
-        })
+        JSON_DATA_CLASSES = json.dumps(
+            {
+                "children": jsontree_classes,
+                "name": "owl:Thing",
+            }
+        )
 
         extra_context = {
             "ontograph": self.ontospy_graph,
             "TOTAL_CLASSES": c_total,
-            'JSON_DATA_CLASSES': JSON_DATA_CLASSES,
+            "JSON_DATA_CLASSES": JSON_DATA_CLASSES,
         }
 
         # Ontology - MAIN PAGE
         contents = self._renderTemplate(
-            "d3/d3_partition_table.html", extraContext=extra_context)
+            "d3/d3_partition_table.html", extraContext=extra_context
+        )
         FILE_NAME = "index.html"
         main_url = self._save2File(contents, FILE_NAME, self.output_path)
 
@@ -57,7 +63,7 @@ class Dataviz(VizFactory):
 
 # if called directly, for testing purposes pick a random ontology
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     TEST_ONLINE = False
     try:

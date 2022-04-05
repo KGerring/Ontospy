@@ -1,16 +1,25 @@
 # !/usr/bin/env python
 #  -*- coding: UTF-8 -*-
 
-from . import *
+
 import random
 
-from colorama import Fore, Style
+from colorama import Fore
+from colorama import Style
+from configparser import SafeConfigParser
+from . import *
+from . import utils as ut
 
 # ===========
 #
 # Ontospy management utils
 #
 # ===========
+
+# ONTOSPY_LOCAL, ONTOSPY_LOCAL_CACHE, ONTOSPY_LIBRARY_DEFAULT
+
+
+ONTOSPY_LOCAL, ONTOSPY_LOCAL_CACHE, ONTOSPY_LIBRARY_DEFAULT = None, None, None
 
 
 def get_or_create_home_repo(reset=False):
@@ -23,8 +32,10 @@ def get_or_create_home_repo(reset=False):
 
         if reset:
             import shutil
-            var = input(
-                "Delete the local library and all of its contents? (y/n) ")
+
+            var = eval(
+                input("Delete the local library and all of its contents? (y/n) ")
+            )
             if var == "y":
                 shutil.rmtree(ONTOSPY_LOCAL)
                 dosetup = True
@@ -43,19 +54,25 @@ def get_or_create_home_repo(reset=False):
 
     # check that the local library folder exists, otherwise prompt user to create it
     if not (os.path.exists(LIBRARY_HOME)):
-        printDebug(
+        ut.printDebug(
             "Warning: the local library at '%s' has been deleted or is not accessible anymore."
-            % LIBRARY_HOME, "important")
-        printDebug(
+            % LIBRARY_HOME,
+            "important",
+        )
+        ut.printDebug(
             "Please reset the local library by running 'ontospy-manager -u <a-valid-path>'",
-            "comment")
+            "comment",
+        )
         raise SystemExit(1)
 
     if dosetup:
-        printDebug(Fore.GREEN + "Setup successfull: local library created at <%s>" %
-              LIBRARY_HOME + Style.RESET_ALL)
+        ut.printDebug(
+            Fore.GREEN
+            + "Setup successfull: local library created at <%s>" % LIBRARY_HOME
+            + Style.RESET_ALL
+        )
     # else:
-    # printDebug(Style.DIM + "Local library: <%s>" % LIBRARY_HOME + Style.RESET_ALL)
+    # ut.printDebug(Style.DIM + "Local library: <%s>" % LIBRARY_HOME + Style.RESET_ALL)
 
     return True
 
@@ -64,24 +81,25 @@ def get_home_location():
     """Gets the path of the local library folder
     :return - a string e.g. "/users/mac/ontospy"
     """
+    from configparser import SafeConfigParser
     config = SafeConfigParser()
-    config_filename = ONTOSPY_LOCAL + '/config.ini'
+    config_filename = ONTOSPY_LOCAL + "/config.ini"
 
     if not os.path.exists(config_filename):
-        config_filename = 'config.ini'
+        config_filename = "config.ini"
 
     config.read(config_filename)
     try:
-        _location = config.get('models', 'dir')
+        _location = config.get("models", "dir")
         if _location.endswith("/"):
             return _location
         else:
             return _location + "/"
     except:
         # FIRST TIME, create it
-        config.add_section('models')
-        config.set('models', 'dir', ONTOSPY_LIBRARY_DEFAULT)
-        with open(config_filename, 'w') as f:
+        config.add_section("models")
+        config.set("models", "dir", ONTOSPY_LIBRARY_DEFAULT)
+        with open(config_filename, "w") as f:
             # note: this does not remove previously saved settings
             config.write(f)
 
@@ -108,11 +126,12 @@ def get_localontologies(pattern=""):
 def get_random_ontology(TOP_RANGE=10, pattern=""):
     """for testing purposes. Returns a random ontology/graph"""
     choices = get_localontologies(pattern=pattern)
+    
     try:
         ontouri = choices[random.randint(0, TOP_RANGE)]  # [0]
     except:
         ontouri = choices[0]
-    printDebug("Testing with URI: %s" % ontouri)
+    ut.printDebug(f"Testing with URI: {ontouri}")
     g = get_pickled_ontology(ontouri)
     if not g:
         g = do_pickle_ontology(ontouri)
@@ -120,27 +139,35 @@ def get_random_ontology(TOP_RANGE=10, pattern=""):
 
 
 def get_pickled_ontology(filename):
-    """ try to retrieve a cached ontology """
+    """try to retrieve a cached ontology
+    
+    GLOBAL_DISABLE_CACHE
+    ONTOSPY_LOCAL_CACHE
+    
+    """
     pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
     # pickledfile = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
     if GLOBAL_DISABLE_CACHE:
-        printDebug(
+        ut.printDebug(
             "WARNING: DEMO MODE cache has been disabled in __init__.py ==============",
-            "red")
+            "red",
+        )
     if os.path.isfile(pickledfile) and not GLOBAL_DISABLE_CACHE:
         try:
             return cPickle.load(open(pickledfile, "rb"))
         except:
-            printDebug(Style.DIM +
-                  "** WARNING: Cache is out of date ** ...recreating it... " +
-                  Style.RESET_ALL)
+            ut.printDebug(
+                Style.DIM
+                + "** WARNING: Cache is out of date ** ...recreating it... "
+                + Style.RESET_ALL
+            )
             return None
     else:
         return None
 
 
 def del_pickled_ontology(filename):
-    """ 
+    """
     Remove a cached ontology based on related filename
     """
     pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
@@ -153,7 +180,7 @@ def del_pickled_ontology(filename):
 
 
 def rename_pickled_ontology(filename, newname):
-    """ try to rename a cached ontology """
+    """try to rename a cached ontology"""
     pickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, filename + ".pickle")
     # pickledfile = ONTOSPY_LOCAL_CACHE + "/" + filename + ".pickle"
     newpickledfile = os.path.join(ONTOSPY_LOCAL_CACHE, newname + ".pickle")
@@ -183,25 +210,39 @@ def do_pickle_ontology(filename, g=None):
     if not GLOBAL_DISABLE_CACHE:
         try:
             cPickle.dump(g, open(pickledpath, "wb"))
-            printDebug(".. cached <%s>" % filename, "green")
+            ut.printDebug(".. cached <%s>" % filename, "green")
         except Exception as e:
-            printDebug(Style.DIM + "\n.. Failed caching <%s>" % filename +
-                  Style.RESET_ALL)
-            printDebug(str(e) + "\n")
-            printDebug(
-                Style.DIM +
-                "... attempting to increase the recursion limit from %d to %d" %
-                (sys.getrecursionlimit(), sys.getrecursionlimit() * 10) +
-                Style.RESET_ALL)
+            ut.printDebug(
+                Style.DIM + "\n.. Failed caching <%s>" % filename + Style.RESET_ALL
+            )
+            ut.printDebug(str(e) + "\n")
+            ut.printDebug(
+                Style.DIM
+                + "... attempting to increase the recursion limit from %d to %d"
+                % (sys.getrecursionlimit(), sys.getrecursionlimit() * 10)
+                + Style.RESET_ALL
+            )
 
             try:
                 sys.setrecursionlimit(sys.getrecursionlimit() * 10)
                 cPickle.dump(g, open(pickledpath, "wb"))
-                printDebug(".. cached <%s>" % filename, "green")
+                ut.printDebug(".. cached <%s>" % filename, "green")
             except Exception as e:
-                printDebug(
+                ut.printDebug(
                     "\n... Failed caching <%s>... Aborting caching operation..."
-                    % filename, "error")
-                printDebug(str(e) + "\n")
+                    % filename,
+                    "error",
+                )
+                ut.printDebug(str(e) + "\n")
             sys.setrecursionlimit(int(sys.getrecursionlimit() / 10))
     return g
+
+
+__all__ = sorted(['do_pickle_ontology',
+                  'rename_pickled_ontology',
+                  'del_pickled_ontology',
+                  'get_pickled_ontology',
+                  'get_random_ontology',
+                  'get_localontologies',
+                  'get_home_location',
+                  'get_or_create_home_repo'])

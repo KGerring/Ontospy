@@ -24,10 +24,7 @@ python dbpedia.py -o
 """
 
 
-
-
-
-from sparqlpy import *
+from .sparqlpy import *
 
 __version__ = "0.1"
 __copyright__ = "CopyRight (C) 2013 by Michele Pasin"
@@ -38,14 +35,10 @@ __author_email__ = "michele dot pasin at gmail dot com"
 USAGE = "%prog [options]"
 VERSION = "%prog v" + __version__
 
-AGENT = "%s/%s" % (__name__, __version__)
-
-
-
+AGENT = f"{__name__}/{__version__}"
 
 
 class DBpediaEndpoint(SparqlEndpoint):
-
     def __init__(self, prefixes={}, verbose=True):
         endpoint = "http://dbpedia.org/sparql"
 
@@ -53,15 +46,10 @@ class DBpediaEndpoint(SparqlEndpoint):
             "dbpedia-owl": "http://dbpedia.org/ontology/",
             "dbpedia2": "http://dbpedia.org/property/",
             "dbpedia": "http://dbpedia.org/",
-            "yago" : "http://dbpedia.org/class/yago/" ,
+            "yago": "http://dbpedia.org/class/yago/",
         }
 
         super(DBpediaEndpoint, self).__init__(endpoint, prefixes, verbose=True)
-
-
-
-
-
 
 
 def parse_options():
@@ -74,29 +62,58 @@ def parse_options():
 
     parser = optparse.OptionParser(usage=USAGE, version=VERSION)
 
-    parser.add_option("-q", "--query",
-            action="store", type="string", default="", dest="query",
-            help="SPARQL query string")
+    parser.add_option(
+        "-q",
+        "--query",
+        action="store",
+        type="string",
+        default="",
+        dest="query",
+        help="SPARQL query string",
+    )
 
-    parser.add_option("-f", "--format",
-            action="store", type="string", default="JSON", dest="format",
-            help="Results format: one of JSON, XML")
+    parser.add_option(
+        "-f",
+        "--format",
+        action="store",
+        type="string",
+        default="JSON",
+        dest="format",
+        help="Results format: one of JSON, XML",
+    )
 
-    parser.add_option("-d", "--describe",
-            action="store", type="string", default="", dest="describe",
-            help="Describe Query: just pass a URI")
+    parser.add_option(
+        "-d",
+        "--describe",
+        action="store",
+        type="string",
+        default="",
+        dest="describe",
+        help="Describe Query: just pass a URI",
+    )
 
-    parser.add_option("-a", "--alltriples",
-            action="store", type="string", default="", dest="alltriples",
-            help="Get all available triples for a URI")
+    parser.add_option(
+        "-a",
+        "--alltriples",
+        action="store",
+        type="string",
+        default="",
+        dest="alltriples",
+        help="Get all available triples for a URI",
+    )
 
-    parser.add_option("-o", "--ontology",
-            action="store_true", default=False, dest="ontology",
-            help="Get all entities of type owl:Class - aka the ontology")
+    parser.add_option(
+        "-o",
+        "--ontology",
+        action="store_true",
+        default=False,
+        dest="ontology",
+        help="Get all entities of type owl:Class - aka the ontology",
+    )
 
     opts, args = parser.parse_args()
 
-    if len(args) > 0:  #dont take no args
+    if len(args) > 0:  # dont take no args
         parser.print_help()
         raise SystemExit(1)
     if not (opts.query or opts.describe or opts.alltriples or opts.ontology):
@@ -105,13 +122,16 @@ def parse_options():
     return opts, args
 
 
-
-
-
 def main():
     # get parameters
     opts, args = parse_options()
-    query, format, describe, alltriples, ontology = opts.query, opts.format, opts.describe, opts.alltriples, opts.ontology
+    query, format, describe, alltriples, ontology = (
+        opts.query,
+        opts.format,
+        opts.describe,
+        opts.alltriples,
+        opts.ontology,
+    )
 
     sTime = time.time()
 
@@ -120,60 +140,68 @@ def main():
     url = s.endpoint
 
     if query:
-        print("Contacting %s ... \nQuery: \"%s\"; Format: %s\n" % (url, query, format))
+        print((f'Contacting {url} ... \nQuery: "{query}"; Format: {format}\n'))
         results = s.query(query, format)
     elif describe:
-        print("Contacting %s ... \nQuery: DESCRIBE %s; Format: %s\n" % (url, describe, format))
+        print(
+            (
+                    f"Contacting {url} ... \nQuery: DESCRIBE {describe}; Format: {format}\n"
+            )
+        )
         results = s.describe(describe, format)
     elif alltriples:
-        print("Contacting %s ... \nQuery: ALL TRIPLES FOR %s; Format: %s\n" % (url, alltriples, format))
+        print(
+            (
+                    f"Contacting {url} ... \nQuery: ALL TRIPLES FOR {alltriples}; Format: {format}\n"
+            )
+        )
         results = s.allTriplesForURI(alltriples, format)
     elif ontology:
-        print("Contacting %s ... \nQuery: ONTOLOGY; Format: %s\n" % (url, format))
+        print((f"Contacting {url} ... \nQuery: ONTOLOGY; Format: {format}\n"))
         results = s.ontology(format)
-
 
     if format == "JSON":
         results = results["results"]["bindings"]
         for l in results:
             print(l)
     elif format == "XML":
-        print(results.toxml())
+        print((results.toxml()))
     else:
         print(results)
-
 
     # print some stats....
     eTime = time.time()
     tTime = eTime - sTime
-    print("-" * 10)
-    print("Time:       %0.2fs" %  tTime)
+    print(("-" * 10))
+    print((f"Time:       {tTime:0.2f}s"))
 
     try:
         # most prob this works only with JSON results, but you get the idea!
-        print("Found:      %d" % len(results))
-        print("Stats:      (%d/s after %0.2fs)" % (
-                  int(math.ceil(float(len(results)) / tTime)), tTime))
+        print(("Found:      %d" % len(results)))
+        print(
+            (
+                    f"Stats:      ({int(math.ceil(float(len(results)) / tTime)):d}/s after {tTime:0.2f}s)"
+            )
+        )
     except:
         pass
+
 
 if __name__ == "__main__":
     try:
         main()
         sys.exit(0)
-    except KeyboardInterrupt as e: # Ctrl-C
+    except KeyboardInterrupt as e:  # Ctrl-C
         raise e
 
 
+# OLD TEST QUERY
 
+# s = DBpediaEndpoint()
+# resource_uri = "http://dbpedia.org/resource/Foobar"
 
- # OLD TEST QUERY
-
-    # s = DBpediaEndpoint()
-    # resource_uri = "http://dbpedia.org/resource/Foobar"
-
-    # results = s.query("""
-    #     SELECT ?o
-    #     WHERE { <%s> dbpedia-owl:abstract ?o .
-    #     FILTER(langMatches(lang(?o), "EN")) }
-    # """ % resource_uri, "JSON")
+# results = s.query("""
+#     SELECT ?o
+#     WHERE { <%s> dbpedia-owl:abstract ?o .
+#     FILTER(langMatches(lang(?o), "EN")) }
+# """ % resource_uri, "JSON")

@@ -6,20 +6,26 @@ Copyright (c)  __Michele Pasin__ <http://www.michelepasin.org>. All rights reser
 
 """
 
-from __future__ import print_function
-import sys, os, time, optparse
-try:
-    import urllib2
-except ImportError:
-    import urllib.request as urllib2
+
+import optparse
+import os
+import sys
+import time
 
 import click
 import rdflib
 
 from .utils import *
+from . import utils as ut
+
+try:
+    import urllib.request, urllib.error, urllib.parse
+except ImportError:
+    import urllib.request as urllib2
 
 
-class RDFLoader(object):
+class RDFLoader:
+    
     """Utility to Load any RDF source into an RDFLIB graph instance.
 
     Accepts: [single item or list]
@@ -41,12 +47,12 @@ class RDFLoader(object):
     """
 
     SERIALIZATIONS = [
-        'xml',
-        'n3',
-        'nt',
-        'json-ld',
-        'turtle',
-        'rdfa',
+        "xml",
+        "n3",
+        "nt",
+        "json-ld",
+        "turtle",
+        "rdfa",
     ]
 
     def __init__(self, rdfgraph=None, verbose=False):
@@ -59,9 +65,9 @@ class RDFLoader(object):
 
     def _debugGraph(self):
         """internal util to print out contents of graph"""
-        printDebug("Len of graph: ", len(self.rdflib_graph))
+        ut.printDebug("Len of graph: ", len(self.rdflib_graph))
         for x, y, z in self.rdflib_graph:
-            printDebug(x, y, z)
+            ut.printDebug(x, y, z)
 
     def load(self, uri_or_path=None, data=None, file_obj=None, rdf_format=""):
 
@@ -77,10 +83,20 @@ class RDFLoader(object):
             for candidate in uri_or_path:
                 if os.path.isdir(candidate):
                     # inner loop in case it's a folder
-                    temp = get_files_with_extensions(candidate, [
-                        "ttl", "rdf", "owl", "trix", "rdfa", "n3", "nq",
-                        "jsonld", "nt"
-                    ])
+                    temp = get_files_with_extensions(
+                        candidate,
+                        [
+                            "ttl",
+                            "rdf",
+                            "owl",
+                            "trix",
+                            "rdfa",
+                            "n3",
+                            "nq",
+                            "jsonld",
+                            "nt",
+                        ],
+                    )
                 else:
                     # fake a one-element list
                     temp = [candidate]
@@ -106,41 +122,45 @@ class RDFLoader(object):
         else:
             raise Exception("You must specify where to load RDF from.")
 
-        if self.verbose: self.print_summary()
+        if self.verbose:
+            self.print_summary()
 
         return self.rdflib_graph
 
     def load_uri(self, uri):
-        """Load a single resource into the graph for this object. 
+        """Load a single resource into the graph for this object.
 
-        Approach: try loading into a temporary graph first, if that succeeds merge it into the main graph. This allows to deal with the JSONLD loading issues which can solved only by using a  ConjunctiveGraph (https://github.com/RDFLib/rdflib/issues/436). Also it deals with the RDFA error message which seems to stick into a graph even if the parse operation fails. 
-        
-        TODO the final merge operation can be improved as graph-set operations involving blank nodes could case collisions (https://rdflib.readthedocs.io/en/stable/merging.html)  
+        Approach: try loading into a temporary graph first, if that succeeds merge it into the main graph. This allows to deal with the JSONLD loading issues which can solved only by using a  ConjunctiveGraph (https://github.com/RDFLib/rdflib/issues/436). Also it deals with the RDFA error message which seems to stick into a graph even if the parse operation fails.
+
+        TODO the final merge operation can be improved as graph-set operations involving blank nodes could case collisions (https://rdflib.readthedocs.io/en/stable/merging.html)
 
         :param uri: single RDF source location
         :return: None (sets self.rdflib_graph and self.sources_valid)
         """
 
-        # if self.verbose: printDebug("----------")
-        if self.verbose: printDebug("Reading: <%s>" % uri, fg="green")
+        # if self.verbose: ut.printDebug("----------")
+        if self.verbose:
+            ut.printDebug("Reading: <%s>" % uri, fg="green")
         success = False
 
-        sorted_fmt_opts = try_sort_fmt_opts(self.rdf_format_opts, uri)
+        sorted_fmt_opts = ut.try_sort_fmt_opts(self.rdf_format_opts, uri)
 
         for f in sorted_fmt_opts:
             if self.verbose:
-                printDebug(".. trying rdf serialization: <%s>" % f)
+                ut.printDebug(".. trying rdf serialization: <%s>" % f)
             try:
-                if f == 'json-ld':
+                if f == "json-ld":
                     if self.verbose:
-                        printDebug(
+                        ut.printDebug(
                             "Detected JSONLD - loading data into rdflib.ConjunctiveGraph()",
-                            fg='green')
+                            fg="green",
+                        )
                     temp_graph = rdflib.ConjunctiveGraph()
                 else:
                     temp_graph = rdflib.Graph()
                 temp_graph.parse(uri, format=f)
-                if self.verbose: printDebug("..... success!", bold=True)
+                if self.verbose:
+                    ut.printDebug("..... success!", bold=True)
                 success = True
                 self.sources_valid += [uri]
                 # ok, so merge
@@ -148,7 +168,8 @@ class RDFLoader(object):
                 break
             except:
                 temp = None
-                if self.verbose: printDebug("..... failed")
+                if self.verbose:
+                    ut.printDebug("..... failed")
                 # self._debugGraph()
 
         if not success == True:
@@ -162,23 +183,27 @@ class RDFLoader(object):
         :param rdf_format_opts:
         :return:
         """
-        if self.verbose: printDebug("----------")
-        if self.verbose: printDebug("Reading: '%s ...'" % data[:10])
+        if self.verbose:
+            ut.printDebug("----------")
+        if self.verbose:
+            ut.printDebug(f"Reading: '{data[:10]} ...'")
         success = False
         for f in self.rdf_format_opts:
             if self.verbose:
-                printDebug(".. trying rdf serialization: <%s>" % f)
+                ut.printDebug(f".. trying rdf serialization: <{f}>")
             try:
                 # TODO ??
                 # if f == 'json-ld':
                 #     self._fix_default_graph_for_jsonld()
                 self.rdflib_graph.parse(data=data, format=f)
-                if self.verbose: printDebug("..... success!")
+                if self.verbose:
+                    ut.printDebug("..... success!")
                 success = True
                 self.sources_valid += ["Data: '%s ...'" % data[:10]]
                 break
             except:
-                if self.verbose: printDebug("..... failed", "error")
+                if self.verbose:
+                    ut.printDebug("..... failed", "error")
 
         if not success == True:
             self.loading_failed(self.rdf_format_opts)
@@ -189,8 +214,10 @@ class RDFLoader(object):
         The type of open file objects such as sys.stdout; alias of the built-in file.
         @TODO: when is this used?
         """
-        if self.verbose: printDebug("----------")
-        if self.verbose: printDebug("Reading: <%s> ...'" % file_obj.name)
+        if self.verbose:
+            ut.printDebug("----------")
+        if self.verbose:
+            ut.printDebug("Reading: <%s> ...'" % file_obj.name)
 
         if type(file_obj) == file:
             self.rdflib_graph = self.rdflib_graph + file_obj
@@ -199,21 +226,21 @@ class RDFLoader(object):
             self.loading_failed(self.rdf_format_opts)
             self.sources_invalid += [file_obj.NAME]
 
-    def resolve_redirects_if_needed(self, uri):
+    def resolve_redirects_if_needed(self, uri: str):
         """
         substitute with final uri after 303 redirects (if it's a www location!)
         :param uri:
         :return:
         """
-        if type(uri) == type("string") or type(uri) == type(u"unicode"):
+        if type(uri) == type("string") or type(uri) == type("unicode"):
 
             if uri.startswith("www."):  # support for lazy people
-                uri = "http://%s" % str(uri)
+                uri = f"http://{str(uri)}"
             if uri.startswith("http://"):
                 # headers = "Accept: application/rdf+xml"  # old way
-                headers = {'Accept': "application/rdf+xml"}
-                req = urllib2.Request(uri, headers=headers)
-                res = urllib2.urlopen(req)
+                headers = {"Accept": "application/rdf+xml"}
+                req = urllib.request.Request(uri, headers=headers)
+                res = urllib.request.urlopen(req)
                 uri = res.geturl()
 
         else:
@@ -226,37 +253,43 @@ class RDFLoader(object):
         print out stats about loading operation
         """
         if self.sources_valid:
-            printDebug(
-                "----------\nLoaded %d triples.\n----------" % len(
-                    self.rdflib_graph),
-                fg='white')
-            printDebug(
-                "RDF sources loaded successfully: %d of %d." %
-                (len(self.sources_valid),
-                 len(self.sources_valid) + len(self.sources_invalid)),
-                fg='green')
+            ut.printDebug(
+                "----------\nLoaded %d triples.\n----------" % len(self.rdflib_graph),
+                fg="white",
+            )
+            ut.printDebug(
+                "RDF sources loaded successfully: %d of %d."
+                % (
+                    len(self.sources_valid),
+                    len(self.sources_valid) + len(self.sources_invalid),
+                ),
+                fg="green",
+            )
             for s in self.sources_valid:
-                printDebug("..... '" + s + "'", fg='white')
-            printDebug("----------", fg='white')
+                ut.printDebug("..... '" + s + "'", fg="white")
+            ut.printDebug("----------", fg="white")
         else:
-            printDebug("Sorry - no valid RDF was found", fg='red')
+            ut.printDebug("Sorry - no valid RDF was found", fg="red")
 
         if self.sources_invalid:
-            printDebug(
-                "----------\nRDF sources failed to load: %d.\n----------" %
-                (len(self.sources_invalid)),
-                fg='red')
+            ut.printDebug(
+                "----------\nRDF sources failed to load: %d.\n----------"
+                % (len(self.sources_invalid)),
+                fg="red",
+            )
             for s in self.sources_invalid:
-                printDebug("-> " + s, fg="red")
+                ut.printDebug("-> " + s, fg="red")
 
     def loading_failed(self, rdf_format_opts, uri=""):
         """default message if we need to abort loading"""
         if uri:
             uri = " <%s>" % str(uri)
-        printDebug(
+        ut.printDebug(
             "----------\nFatal error parsing graph%s\n(tried RDF serializations: %s)"
-            % (uri, str(rdf_format_opts)), "red")
-        printDebug(
+            % (uri, str(rdf_format_opts)),
+            "red",
+        )
+        ut.printDebug(
             "----------\nTIP: You can try one of the following RDF validation services\n<http://mowl-power.cs.man.ac.uk:8080/validator/validate>\n<http://rdfvalidator.mybluemix.net/>\n<https://json-ld.org/playground/>"
         )
 
@@ -269,10 +302,9 @@ class RDFLoader(object):
 
 
 @click.command()
-@click.argument('uri_or_path', nargs=-1, type=click.STRING)
-@click.option('--noverbose', is_flag=True, help='Turn off verbose mode.')
-@click.option(
-    '--trylist', is_flag=True, help='Try loading a predefined list of files.')
+@click.argument("uri_or_path", nargs=-1, type=click.STRING)
+@click.option("--noverbose", is_flag=True, help="Turn off verbose mode.")
+@click.option("--trylist", is_flag=True, help="Try loading a predefined list of files.")
 def test(uri_or_path, noverbose, trylist):
     l = RDFLoader(verbose=not (noverbose))
     if trylist or not uri_or_path:
@@ -281,9 +313,9 @@ def test(uri_or_path, noverbose, trylist):
         l.load(uri_or_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     simple test: python -m ontospy.core.rdf_loader [PATH] [OPTIONS]
     """
     test()
-    printDebug("Finished")
+    ut.printDebug("Finished")

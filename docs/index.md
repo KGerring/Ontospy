@@ -14,7 +14,9 @@
 
 ## Welcome to Ontospy's Documentation!
 
-Ontospy is a lightweight Python library and command line tool for working with vocabularies encoded in the [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) family of languages.
+Ontospy is a lightweight Python library and command line tool for 
+working with vocabularies encoded in the 
+[RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) family of languages.
 
 > Note: this documentation is still a work-in-progress
 
@@ -87,9 +89,11 @@ $ pip install ontospy -U
 
 ## Quick Example
 
-If used as a Python package, the basic workflow is the following: load a graph by instantiating the `Ontospy` class with a file containing RDFS, OWL or SKOS definitions; you get back an object that lets you interrogate the ontology. That's all!
+If used as a Python package, the basic workflow is the following: 
+load a graph by instantiating the `Ontospy` class with a file containing RDFS, OWL or SKOS definitions; you get back an object that lets you interrogate the ontology. That's all!
 
-Let's take a look at the [Friend Of A Friend](http://semanticweb.org/wiki/FOAF) vocabulary.
+Let's take a look at the 
+[Friend Of A Friend](http://semanticweb.org/wiki/FOAF) vocabulary.
 
 
 ```python
@@ -302,13 +306,14 @@ Options:
 
 This feature is not really meant to be used programmatically, but I'm sure there are a few constructs in there which can be reused.
 
-In a nutshell, all visualizations inherit from a [VizFactory](https://github.com/lambdamusic/Ontospy/blob/master/ontospy/ontodocs/viz_factory.py) class that abstracts away the most common operations involved in rendering a dataviz.
+In a nutshell, all visualizations inherit from a [VizFactory](https://github.com/KGerring/Ontospy/blob/master/ontospy/ontodocs/viz_factory.py) class that abstracts away the most common operations involved in rendering a dataviz.
 
 This is how you would invoke a visualization from a script:
 
 ```python
 import ontospy
 from ontospy.ontodocs.viz.viz_html_single import *
+#HTMLVisualizer
 
 g = ontospy.Ontospy("http://cohere.open.ac.uk/ontology/cohere.owl#")
 
@@ -328,7 +333,7 @@ This is due to the new [System Integrity Protection](https://support.apple.com/e
 
 ## Quick Links
 
--   Github: [https://github.com/lambdamusic/ontospy](https://github.com/lambdamusic/ontospy)
+-   Github: [https://github.com/lambdamusic/ontospy](https://github.com/KGerring/ontospy)
 -   CheeseShop: [https://pypi.python.org/pypi/ontospy](https://pypi.python.org/pypi/ontospy)
 -   Docs: [http://lambdamusic.github.io/Ontospy/](http://lambdamusic.github.io/Ontospy/)
 

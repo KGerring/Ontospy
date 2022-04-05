@@ -49,3 +49,4 @@ $ pip install -e .
 ## Documentation
 
 http://lambdamusic.github.io/Ontospy/
+

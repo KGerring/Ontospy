@@ -1,37 +1,46 @@
 # !/usr/bin/env python
 #  -*- coding: UTF-8 -*-
 """
+
 Python and RDF Utils for Ontospy
 
 Copyright (c) 2010-2015 __Michele Pasin__ <http://www.michelepasin.org>. All rights reserved.
 
 """
 
-from __future__ import print_function
 
-from colorama import Fore, Style
-
-import rdflib
-from rdflib import RDFS, RDF, BNode
-from rdflib.namespace import OWL, DC
-DEFAULT_LANGUAGE = "en"
-
-import sys, os, subprocess, random, platform
+import os
+import platform
+import random
+import subprocess
+import sys
+from typing import Any, Callable
 
 import click
+import rdflib
+from colorama import Fore
+from colorama import Style
+from rdflib import RDF
+from rdflib import RDFS
+from rdflib import BNode
+from rdflib.namespace import DC
+from rdflib.namespace import OWL
+
+DEFAULT_LANGUAGE = "en"
+
 
 # Fix Python 2.x.
 try:
-    UNICODE_EXISTS = bool(type(unicode))
+    UNICODE_EXISTS = bool(type(str))
 except NameError:
-    unicode = lambda s: str(s)
+    str: Callable[[Any], Any] = lambda s: str(s)
 
 # ===========
 # generic python utils
 # ===========
 
 
-def is_http(stringa):
+def is_http(stringa) -> bool:
     if stringa:
         if stringa.startswith("http://") or stringa.startswith("https://"):
             return True
@@ -49,7 +58,7 @@ def safe_str(u, errors="replace"):
     return s
 
 
-def list_chunks(l, n):
+def list_chunks(l, n: int):
     """Yield successive n-sized chunks from l.
 
     import pprint
@@ -63,8 +72,8 @@ def list_chunks(l, n):
      [70, 71, 72, 73, 74]]
 
     """
-    for i in xrange(0, len(l), n):
-        yield l[i:i + n]
+    for i in range(0, len(l), n):
+        yield l[i : i + n]
 
 
 def split_list(alist, wanted_parts=1):
@@ -77,13 +86,13 @@ def split_list(alist, wanted_parts=1):
     """
     length = len(alist)
     return [
-        alist[i * length // wanted_parts:(i + 1) * length // wanted_parts]
+        alist[i * length // wanted_parts : (i + 1) * length // wanted_parts]
         for i in range(wanted_parts)
     ]
 
 
 def remove_duplicates(seq, idfun=None):
-    """ removes duplicates from a list, order preserving, as found in
+    """removes duplicates from a list, order preserving, as found in
     http://www.peterbe.com/plog/uniqifiers-benchmark
     """
     # order preserving
@@ -99,7 +108,8 @@ def remove_duplicates(seq, idfun=None):
         # in old Python versions:
         # if seen.has_key(marker)
         # but in new ones:
-        if marker in seen: continue
+        if marker in seen:
+            continue
         seen[marker] = 1
         result.append(item)
     return result
@@ -132,8 +142,8 @@ def printDebug(text, mystyle="", err=True, **kwargs):
     ```
     from colorama import Fore, Style
 
-    printDebug(Fore.BLUE + Style.BRIGHT + "[%d]" % 1 + 
-            Style.RESET_ALL + uri + " ==> " + Fore.RED + title + 
+    printDebug(Fore.BLUE + Style.BRIGHT + "[%d]" % 1 +
+            Style.RESET_ALL + uri + " ==> " + Fore.RED + title +
             Style.RESET_ALL)
     ```
 
@@ -176,13 +186,11 @@ def printDebug(text, mystyle="", err=True, **kwargs):
     elif mystyle == "normal":
         click.secho(text, reset=True, err=err)
     elif mystyle == "red" or mystyle == "error":
-        click.secho(text, fg='red', err=err)
+        click.secho(text, fg="red", err=err)
     elif mystyle == "green":
-        click.secho(text, fg='green', err=err)
+        click.secho(text, fg="green", err=err)
     else:
         click.secho(text, err=err, **kwargs)
-
-
 
 
 def printInfo(text, mystyle="", **kwargs):
@@ -193,7 +201,6 @@ def printInfo(text, mystyle="", **kwargs):
     Fixes https://github.com/lambdamusic/Ontospy/issues/76
     """
     printDebug(text, mystyle, False, **kwargs)
-
 
 
 def pprint2columns(llist, max_length=60):
@@ -210,17 +217,17 @@ def pprint2columns(llist, max_length=60):
 
     # llist length must be even, otherwise splitting fails
     if not len(llist) % 2 == 0:
-        llist += [' ']  # add a fake element
+        llist += [" "]  # add a fake element
 
     if col_width > max_length:
         for el in llist:
             printInfo(el)
     else:
-        column1 = llist[:int(len(llist) / 2)]
-        column2 = llist[int(len(llist) / 2):]
+        column1 = llist[: int(len(llist) / 2)]
+        column2 = llist[int(len(llist) / 2) :]
         for c1, c2 in zip(column1, column2):
             space = " " * (col_width - len(c1))
-            printInfo("%s%s%s" % (c1, space, c2))
+            printInfo(f"{c1}{space}{c2}")
 
 
 def pprinttable(rows):
@@ -251,9 +258,8 @@ def pprinttable(rows):
         lens = []
         for i in range(len(rows[0])):
             lens.append(
-                len(
-                    max([x[i] for x in rows] + [headers[i]],
-                        key=lambda x: len(str(x)))))
+                len(max([x[i] for x in rows] + [headers[i]], key=lambda x: len(str(x))))
+            )
         formats = []
         hformats = []
         for i in range(len(rows[0])):
@@ -264,7 +270,7 @@ def pprinttable(rows):
             hformats.append("%%-%ds" % lens[i])
         pattern = " | ".join(formats)
         hpattern = " | ".join(hformats)
-        separator = "-+-".join(['-' * n for n in lens])
+        separator = "-+-".join(["-" * n for n in lens])
         printInfo(hpattern % tuple(headers))
         printInfo(separator)
         for line in rows:
@@ -305,29 +311,27 @@ def save_anonymous_gist(title, files):
     gist = create_gist(title, files)
 
     urls = {
-        'gist':
-        gist.html_url,
-        'blocks':
-        "http://bl.ocks.org/anonymous/" + gist.html_url.split("/")[-1],
-        'blocks_fullwin':
-        "http://bl.ocks.org/anonymous/raw/" + gist.html_url.split("/")[-1]
+        "gist": gist.html_url,
+        "blocks": "http://bl.ocks.org/anonymous/" + gist.html_url.split("/")[-1],
+        "blocks_fullwin": "http://bl.ocks.org/anonymous/raw/"
+        + gist.html_url.split("/")[-1],
     }
 
     return urls
 
 
 def _clear_screen():
-    """ http://stackoverflow.com/questions/18937058/python-clear-screen-in-shell """
+    """http://stackoverflow.com/questions/18937058/python-clear-screen-in-shell"""
     if platform.system() == "Windows":
-        tmp = os.system('cls')  #for window
+        tmp = os.system("cls")  # for window
     else:
-        tmp = os.system('clear')  #for Linux
+        tmp = os.system("clear")  # for Linux
     return True
 
 
 def addQuotes(s):
     """wrap a strings with quotes"""
-    return "\"" + s + "\""
+    return '"' + s + '"'
 
 
 class bcolors:
@@ -335,23 +339,23 @@ class bcolors:
     http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
     eg print bcolors.YELLOW + "Warning: No active frommets remain. Continue?"
     """
-    PINK = '\033[95m'  # pink
-    BLUE = '\033[94m'  # blue
-    GREEN = '\033[92m'  # green
-    YELLOW = '\033[93m'  # yellow
-    RED = '\033[91m'  # red
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'  # bold black
-    UNDERLINE = '\033[4m'  # underline (note: must be ended)
+
+    PINK = "\033[95m"  # pink
+    BLUE = "\033[94m"  # blue
+    GREEN = "\033[92m"  # green
+    YELLOW = "\033[93m"  # yellow
+    RED = "\033[91m"  # red
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"  # bold black
+    UNDERLINE = "\033[4m"  # underline (note: must be ended)
 
 
 def playSound(folder, name=""):
-    """ as easy as that """
+    """as easy as that"""
     try:
         if not name:
             onlyfiles = [
-                f for f in os.listdir(folder)
-                if os.path.isfile(os.path.join(folder, f))
+                f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))
             ]
             name = random.choice(onlyfiles)
         subprocess.call(["afplay", folder + name])
@@ -362,7 +366,7 @@ def playSound(folder, name=""):
 
 def truncate(data, l=20):
     "truncate a string"
-    info = (data[:l] + '..') if len(data) > l else data
+    info = (data[:l] + "..") if len(data) > l else data
     return info
 
 
@@ -375,14 +379,14 @@ NAMESPACES_DEFAULT = [
     ("rdfs", rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#")),
     ("xml", rdflib.URIRef("http://www.w3.org/XML/1998/namespace")),
     ("xsd", rdflib.URIRef("http://www.w3.org/2001/XMLSchema#")),
-    ('foaf', rdflib.URIRef("http://xmlns.com/foaf/0.1/")),
+    ("foaf", rdflib.URIRef("http://xmlns.com/foaf/0.1/")),
     ("skos", rdflib.URIRef("http://www.w3.org/2004/02/skos/core#")),
     ("owl", rdflib.URIRef("http://www.w3.org/2002/07/owl#")),
 ]
 
 
 def isBlankNode(aClass):
-    """ small utility that checks if a class is a blank node """
+    """small utility that checks if a class is a blank node"""
     if type(aClass) == BNode:
         return True
     else:
@@ -400,13 +404,14 @@ def printBasicInfo(onto):
     printInfo("_" * 50)
     printInfo("\nNAMESPACES:\n")
     for x in onto.ontologyNamespaces:
-        printInfo("%s : %s" % (x[0], x[1]))
+        printInfo(f"{x[0]} : {x[1]}")
 
     printInfo("_" * 50, "\n")
     printInfo("ONTOLOGY METADATA:\n")
     for x, y in onto.ontologyAnnotations():
-        printInfo("%s: \n	 %s" % (uri2niceString(x, onto.ontologyNamespaces),
-                              uri2niceString(y, onto.ontologyNamespaces)))
+        printInfo(
+                f"{uri2niceString(x, onto.ontologyNamespaces)}: \n	 {uri2niceString(y, onto.ontologyNamespaces)}"
+        )
     printInfo("_" * 50, "\n")
 
     printInfo("CLASS TAXONOMY:\n")
@@ -420,7 +425,7 @@ def inferMainPropertyType(uriref):
     (without the OWL ontology - which would be the propert way)
 
     In [3]: for x in g.all_properties:
-       ...:		print x.rdftype
+       ...:		print(x.rdftype)
        ...:
     http://www.w3.org/2002/07/owl#FunctionalProperty
     http://www.w3.org/2002/07/owl#FunctionalProperty
@@ -444,12 +449,9 @@ def inferMainPropertyType(uriref):
         return None
 
 
-def printGenericTree(element,
-                     level=0,
-                     showids=True,
-                     labels=False,
-                     showtype=True,
-                     TYPE_MARGIN=18):
+def printGenericTree(
+    element, level=0, showids=True, labels=False, showtype=True, TYPE_MARGIN=18
+):
     """
     Print nicely into stdout the taxonomical tree of an ontology.
 
@@ -473,9 +475,11 @@ def printGenericTree(element,
     }
 
     if showids:
-        _id_ = Fore.BLUE +	\
-        "[%d]%s" % (element.id, " " * (ID_MARGIN  - len(str(element.id)))) +  \
-            Fore.RESET
+        _id_ = (
+                Fore.BLUE
+                + f"[{element.id:d}]{' ' * (ID_MARGIN - len(str(element.id)))}"
+                + Fore.RESET
+        )
 
     elif showtype:
         _prop = uri2niceString(element.rdftype)
@@ -483,8 +487,9 @@ def printGenericTree(element,
             prop = SHORT_TYPES[_prop]
         except:
             prop = _prop
-        _id_ = Fore.BLUE +	\
-        "[%s]%s" % (prop, " " * (TYPE_MARGIN  - len(prop))) + Fore.RESET
+        _id_ = (
+                Fore.BLUE + f"[{prop}]{' ' * (TYPE_MARGIN - len(prop))}" + Fore.RESET
+        )
 
     else:
         _id_ = ""
@@ -492,16 +497,15 @@ def printGenericTree(element,
     if labels:
         bestLabel = element.bestLabel(qname_allowed=False)
         if bestLabel:
-            bestLabel = Fore.MAGENTA + " (\"%s\")" % bestLabel + Fore.RESET
+            bestLabel = Fore.MAGENTA + ' ("%s")' % bestLabel + Fore.RESET
     else:
         bestLabel = ""
 
-    printInfo("%s%s%s%s" % (_id_, "-" * 4 * level, element.qname, bestLabel))
+    printInfo(f"{_id_}{'-' * 4 * level}{element.qname}{bestLabel}")
 
     # recursion
     for sub in element.children():
-        printGenericTree(sub, (level + 1), showids, labels, showtype,
-                         TYPE_MARGIN)
+        printGenericTree(sub, (level + 1), showids, labels, showtype, TYPE_MARGIN)
 
 
 def firstStringInList(literalEntities, prefLanguage="en"):
@@ -515,15 +519,16 @@ def firstStringInList(literalEntities, prefLanguage="en"):
         match = literalEntities[0]
     elif len(literalEntities) > 1:
         for x in literalEntities:
-            if getattr(x, 'language') and getattr(x,
-                                                  'language') == prefLanguage:
+            if getattr(x, "language") and getattr(x, "language") == prefLanguage:
                 match = x
         if not match:  # don't bother about language
             match = literalEntities[0]
     return match
 
 
-def firstEnglishStringInList(literalEntities, ):
+def firstEnglishStringInList(
+    literalEntities,
+):
     return firstStringInList(literalEntities, "en")
 
 
@@ -538,8 +543,7 @@ def joinStringsInList(literalEntities, prefLanguage="en"):
         return literalEntities[0]
     elif len(literalEntities) > 1:
         for x in literalEntities:
-            if getattr(x, 'language') and getattr(x,
-                                                  'language') == prefLanguage:
+            if getattr(x, "language") and getattr(x, "language") == prefLanguage:
                 match.append(x)
         if not match:  # don't bother about language
             for x in literalEntities:
@@ -550,22 +554,22 @@ def joinStringsInList(literalEntities, prefLanguage="en"):
 
 def sortByNamespacePrefix(urisList, nsList):
     """
-        Given an ordered list of namespaces prefixes, order a list of uris based on that.
-        Eg
+    Given an ordered list of namespaces prefixes, order a list of uris based on that.
+    Eg
 
-        In [7]: ll
-        Out[7]:
-        [rdflib.term.URIRef(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-         rdflib.term.URIRef(u'printGenericTreeorg/2000/01/rdf-schema#comment'),
-         rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#label'),
-         rdflib.term.URIRef(u'http://www.w3.org/2002/07/owl#equivalentClass')]
+    In [7]: ll
+    Out[7]:
+    [rdflib.term.URIRef(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+     rdflib.term.URIRef(u'printGenericTreeorg/2000/01/rdf-schema#comment'),
+     rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#label'),
+     rdflib.term.URIRef(u'http://www.w3.org/2002/07/owl#equivalentClass')]
 
-        In [8]: sortByNamespacePrefix(ll, [OWL.OWLNS, RDFS])
-        Out[8]:
-        [rdflib.term.URIRef(u'http://www.w3.org/2002/07/owl#equivalentClass'),
-         rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#comment'),
-         rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#label'),
-         rdflib.term.URIRef(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type')]
+    In [8]: sortByNamespacePrefix(ll, [OWL.OWLNS, RDFS])
+    Out[8]:
+    [rdflib.term.URIRef(u'http://www.w3.org/2002/07/owl#equivalentClass'),
+     rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#comment'),
+     rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#label'),
+     rdflib.term.URIRef(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type')]
 
     """
     exit = []
@@ -587,15 +591,15 @@ def sortByNamespacePrefix(urisList, nsList):
 
 def sort_uri_list_by_name(uri_list, bypassNamespace=False):
     """
-     Sorts a list of uris
+    Sorts a list of uris
 
-     bypassNamespace:
-        based on the last bit (usually the name after the namespace) of a uri
-        It checks whether the last bit is specified using a # or just a /, eg:
-             rdflib.URIRef('http://purl.org/ontology/mo/Vinyl'),
-             rdflib.URIRef('http://purl.org/vocab/frbr/core#Work')
+    bypassNamespace:
+       based on the last bit (usually the name after the namespace) of a uri
+       It checks whether the last bit is specified using a # or just a /, eg:
+            rdflib.URIRef('http://purl.org/ontology/mo/Vinyl'),
+            rdflib.URIRef('http://purl.org/vocab/frbr/core#Work')
 
-     """
+    """
 
     def get_last_bit(uri_string):
         try:
@@ -611,12 +615,11 @@ def sort_uri_list_by_name(uri_list, bypassNamespace=False):
             return sorted(uri_list)
     except:
         # TODO: do more testing.. maybe use a unicode-safe method instead of __str__
-        printDebug(
-            "Error in <sort_uri_list_by_name>: possibly a UnicodeEncodeError")
+        printDebug("Error in <sort_uri_list_by_name>: possibly a UnicodeEncodeError")
         return uri_list
 
 
-def guess_fileformat(aUri):
+def guess_fileformat(aUri: str):
     """
     Simple file format guessing (using rdflib format types) based on the suffix
 
@@ -637,7 +640,7 @@ def guess_fileformat(aUri):
         return None
 
 
-def inferNamespacePrefix(aUri):
+def inferNamespacePrefix(aUri: str):
     """
     From a URI returns the last bit and simulates a namespace prefix when rendering the ontology.
 
@@ -652,7 +655,7 @@ def inferNamespacePrefix(aUri):
     return prefix
 
 
-def inferURILocalSymbol(aUri):
+def inferURILocalSymbol(aUri: str):
     """
     From a URI returns a tuple (namespace, uri-last-bit)
 
@@ -678,7 +681,7 @@ def inferURILocalSymbol(aUri):
     return (name, ns)
 
 
-def uri2niceString(aUri, namespaces=None):
+def uri2niceString(aUri: str, namespaces=None):
     """
     From a URI, returns a nice string representation that uses also the namespace symbols
     Cuts the uri of the namespace, and replaces it with its shortcut (for base, attempts to infer it or leaves it blank)
@@ -705,24 +708,29 @@ def uri2niceString(aUri, namespaces=None):
             try:  # check if it matches the available NS
                 if stringa.find(aNamespaceTuple[1].__str__()) == 0:
                     if aNamespaceTuple[0]:  # for base NS, it's empty
-                        stringa = aNamespaceTuple[0] + ":" + stringa[len(
-                            aNamespaceTuple[1].__str__()):]
+                        stringa = (
+                            aNamespaceTuple[0]
+                            + ":"
+                            + stringa[len(aNamespaceTuple[1].__str__()) :]
+                        )
                     else:
                         prefix = inferNamespacePrefix(aNamespaceTuple[1])
                         if prefix:
-                            stringa = prefix + ":" + stringa[len(
-                                aNamespaceTuple[1].__str__()):]
+                            stringa = (
+                                prefix
+                                + ":"
+                                + stringa[len(aNamespaceTuple[1].__str__()) :]
+                            )
                         else:
-                            stringa = ":" + stringa[len(aNamespaceTuple[1].
-                                                        __str__()):]
+                            stringa = ":" + stringa[len(aNamespaceTuple[1].__str__()) :]
             except:
                 stringa = "error"
 
     elif type(aUri) == rdflib.term.Literal:
-        stringa = "\"%s\"" % aUri  # no string casting so to prevent encoding errors
+        stringa = f'"{aUri}"'  # no string casting so to prevent encoding errors
     else:
         # print(type(aUri))
-        if type(aUri) == type(u''):
+        if type(aUri) == type(""):
             stringa = aUri
         else:
             stringa = aUri.toPython()
@@ -750,8 +758,10 @@ def niceString2uri(aUriString, namespaces=None):
         namespaces = []
 
     for aNamespaceTuple in namespaces:
-        if aNamespaceTuple[0] and aUriString.find(
-                aNamespaceTuple[0].__str__() + ":") == 0:
+        if (
+            aNamespaceTuple[0]
+            and aUriString.find(aNamespaceTuple[0].__str__() + ":") == 0
+        ):
             aUriString_name = aUriString.split(":")[1]
             return rdflib.term.URIRef(aNamespaceTuple[1] + aUriString_name)
 
@@ -777,7 +787,7 @@ def entityLabel(rdfGraph, anEntity, language=DEFAULT_LANGUAGE, getall=True):
         return temp
     else:
         for o in rdfGraph.objects(anEntity, RDFS.label):
-            if getattr(o, 'language') and getattr(o, 'language') == language:
+            if getattr(o, "language") and getattr(o, "language") == language:
                 return o
         return ""
 
@@ -800,12 +810,12 @@ def entityComment(rdfGraph, anEntity, language=DEFAULT_LANGUAGE, getall=True):
         return temp
     else:
         for o in rdfGraph.objects(anEntity, RDFS.comment):
-            if getattr(o, 'language') and getattr(o, 'language') == language:
+            if getattr(o, "language") and getattr(o, "language") == language:
                 return o
         return ""
 
 
-def shellPrintOverview(g, opts={'labels': False}):
+def shellPrintOverview(g, opts={"labels": False}):
     """
     overview of graph invoked from command line
 
@@ -819,11 +829,11 @@ def shellPrintOverview(g, opts={'labels': False}):
 
     # get opts
     try:
-        labels = opts['labels']
+        labels = opts["labels"]
     except:
         labels = False
     try:
-        individuals = opts['individuals']
+        individuals = opts["individuals"]
     except:
         individuals = False
 
@@ -869,7 +879,7 @@ def shellPrintOverview(g, opts={'labels': False}):
             # printDebug("%s" % (x.bestLabel()), "comment")
     else:
         printInfo("None found", "comment")
-    
+
     if individuals:
         printInfo(Style.BRIGHT + "\nIndividuals\n" + "-" * 10 + Style.RESET_ALL)
         if g.all_individuals:
@@ -881,17 +891,18 @@ def shellPrintOverview(g, opts={'labels': False}):
             printInfo("None found", "comment")
 
 
-
 def slugify(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
     and converts spaces to hyphens.
     http://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename-in-python
     """
-    import unicodedata, re
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '', value.decode()).strip().lower())
-    value = re.sub('[-\s]+', '-', value)
+    import re
+    import unicodedata
+
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore")
+    value = str(re.sub("[^\w\s-]", "", value.decode()).strip().lower())
+    value = re.sub("[-\s]+", "-", value)
     return value
 
 
@@ -902,7 +913,10 @@ def get_files_with_extensions(folder, extensions):
     for root, dirs, files in os.walk(folder):
         for file in files:
             filename, file_extension = os.path.splitext(file)
-            if not filename.startswith('.') and file_extension.replace(".", "") in extensions:
+            if (
+                not filename.startswith(".")
+                and file_extension.replace(".", "") in extensions
+            ):
                 out += [os.path.join(root, file)]
                 # break
 
@@ -910,36 +924,55 @@ def get_files_with_extensions(folder, extensions):
 
 
 def try_sort_fmt_opts(rdf_format_opts_list, uri):
-    """reorder fmt options based on uri file type suffix - if available - so to test most likely serialization first when parsing some RDF 
+    """reorder fmt options based on uri file type suffix - if available - so to test most likely serialization first when parsing some RDF
 
-    NOTE this is not very nice as it is hardcoded and assumes the origin serializations to be this: ['turtle', 'xml', 'n3', 'nt', 'json-ld', 'rdfa']
-    
+    NOTE this is not very nice as it is hardcoded and assumes the origin serializations to be this:
+    ['turtle', 'xml', 'n3', 'nt', 'json-ld', 'rdfa']
+
     """
     filename, file_extension = os.path.splitext(uri)
     # print(filename, file_extension)
     if file_extension == ".ttl" or file_extension == ".turtle":
-        return ['turtle', 'n3', 'nt', 'json-ld', 'rdfa', 'xml']
+        return ["turtle", "n3", "nt", "json-ld", "rdfa", "xml"]
     elif file_extension == ".xml" or file_extension == ".rdf":
-        return ['xml', 'turtle', 'n3', 'nt', 'json-ld', 'rdfa']
+        return ["xml", "turtle", "n3", "nt", "json-ld", "rdfa"]
     elif file_extension == ".nt" or file_extension == ".n3":
-        return ['n3', 'nt', 'turtle', 'xml', 'json-ld', 'rdfa']
+        return ["n3", "nt", "turtle", "xml", "json-ld", "rdfa"]
     elif file_extension == ".json" or file_extension == ".jsonld":
         return [
-            'json-ld',
-            'rdfa',
-            'n3',
-            'nt',
-            'turtle',
-            'xml',
+            "json-ld",
+            "rdfa",
+            "n3",
+            "nt",
+            "turtle",
+            "xml",
         ]
     elif file_extension == ".rdfa":
         return [
-            'rdfa',
-            'json-ld',
-            'n3',
-            'nt',
-            'turtle',
-            'xml',
+            "rdfa",
+            "json-ld",
+            "n3",
+            "nt",
+            "turtle",
+            "xml",
         ]
     else:
         return rdf_format_opts_list
+
+
+__all__ = sorted(
+        [
+                getattr(v, "__name__", k)
+                for k, v in list(globals().items())  # export
+                if (
+                (
+                        callable(v)
+                        and getattr(v, "__module__", "")
+                        == __name__  # callables from this module
+                        or k.isupper()
+                )
+                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
+        )
+        ]
+)  # neither marked internal
+

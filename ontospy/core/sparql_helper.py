@@ -7,13 +7,16 @@ Copyright (c)  __Michele Pasin__ <http://www.michelepasin.org>. All rights reser
 
 """
 
+
 import rdflib
+
 from .utils import *
+from . import utils as ut
 
 DEFAULT_LANGUAGE = "en"
 
 
-class SparqlHelper(object):
+class SparqlHelper:
     """
     Class containing a bunch of useful RDF queries.
 
@@ -47,10 +50,12 @@ class SparqlHelper(object):
     # ..................
 
     def getOntology(self):
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                WHERE {
                   ?x a owl:Ontology
-               }""")
+               }"""
+        )
         return list(qres)
 
     # ..................
@@ -113,22 +118,28 @@ class SparqlHelper(object):
 
     def getClassInstances(self, aURI):
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                      { ?x rdf:type <%s> }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """ % (aURI))
+                 """
+            % (aURI)
+        )
         return list(qres)
 
     def getClassDirectSupers(self, aURI):
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                      { <%s> rdfs:subClassOf ?x }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """ % (aURI))
+                 """
+            % (aURI)
+        )
         return list(qres)
 
     # ..................
@@ -164,12 +175,15 @@ class SparqlHelper(object):
 
     def getPropDirectSupers(self, aURI):
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                      { <%s> rdfs:subPropertyOf ?x }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """ % (aURI))
+                 """
+            % (aURI)
+        )
         return list(qres)
 
     # ..................
@@ -177,17 +191,20 @@ class SparqlHelper(object):
     # ..................
 
     def getSKOSInstances(self):
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                      { ?x rdf:type skos:Concept }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """)
+                 """
+        )
         return list(qres)
 
     def getSKOSDirectSupers(self, aURI):
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                          {
                              { <%s> skos:broader ?x }
@@ -196,7 +213,9 @@ class SparqlHelper(object):
                          }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """ % (aURI, aURI))
+                 """
+            % (aURI, aURI)
+        )
         return list(qres)
 
     # ..................
@@ -204,14 +223,16 @@ class SparqlHelper(object):
     # ..................
 
     def getShapes(self):
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                WHERE {
                         { ?x a sh:Shape }
                         union
                         { ?x a sh:NodeShape }
                         union
                         { ?x a sh:PropertyShape }
-                    } """)
+                    } """
+        )
         # printDebug(list(qres))
         # sys.exit(0)
         return list(qres)
@@ -221,29 +242,31 @@ class SparqlHelper(object):
     # ..................
 
     def entityTriples(self, aURI):
-        """ Builds all triples for an entity
+        """Builds all triples for an entity
         Note: if a triple object is a blank node (=a nested definition)
         we try to extract all relevant data recursively (does not work with
         sparql endpoins)
         """
 
         aURI = aURI
-        qres = self.rdflib_graph.query("""CONSTRUCT {<%s> ?y ?z }
+        qres = self.rdflib_graph.query(
+            """CONSTRUCT {<%s> ?y ?z }
                  WHERE {
                      { <%s> ?y ?z }
                  }
-                 """ % (aURI, aURI))
+                 """
+            % (aURI, aURI)
+        )
         lres = list(qres)
 
         def recurse(triples_list):
-            """ uses the rdflib <triples> method to pull out all blank nodes info"""
+            """uses the rdflib <triples> method to pull out all blank nodes info"""
             out = []
             for tripl in triples_list:
                 if isBlankNode(tripl[2]):
                     # print "blank node", str(tripl[2])
                     temp = [
-                        x for x in self.rdflib_graph.triples((tripl[2], None,
-                                                              None))
+                        x for x in self.rdflib_graph.triples((tripl[2], None, None))
                     ]
                     out += temp + recurse(temp)
                 else:
@@ -265,12 +288,15 @@ class SparqlHelper(object):
 
     def getClassInstancesCount(self, aURI):
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT (COUNT(?x) AS ?count )
+        qres = self.rdflib_graph.query(
+            """SELECT (COUNT(?x) AS ?count )
                  WHERE {
                      { ?x rdf:type <%s> }
                      FILTER (!isBlank(?x))
                  } ORDER BY ?x
-                 """ % (aURI))
+                 """
+            % (aURI)
+        )
         try:
             return int(list(qres)[0][0])
         except:
@@ -282,12 +308,15 @@ class SparqlHelper(object):
         2015-06-03: currenlty not used, inferred from above
         """
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                      { ?x rdfs:subClassOf <%s> }
                      FILTER (!isBlank(?x))
                  }
-                 """ % (aURI))
+                 """
+            % (aURI)
+        )
         return list(qres)
 
     def getClassAllSupers(self, aURI):
@@ -297,12 +326,15 @@ class SparqlHelper(object):
         """
         aURI = aURI
         try:
-            qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+            qres = self.rdflib_graph.query(
+                """SELECT DISTINCT ?x
                      WHERE {
                          { <%s> rdfs:subClassOf+ ?x }
                          FILTER (!isBlank(?x))
                      }
-                     """ % (aURI))
+                     """
+                % (aURI)
+            )
         except:
             printDebug(
                 "... warning: the 'getClassAllSupers' query failed (maybe missing SPARQL 1.1 support?)"
@@ -317,12 +349,15 @@ class SparqlHelper(object):
         """
         aURI = aURI
         try:
-            qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+            qres = self.rdflib_graph.query(
+                """SELECT DISTINCT ?x
                      WHERE {
                          { ?x rdfs:subClassOf+ <%s> }
                          FILTER (!isBlank(?x))
                      }
-                     """ % (aURI))
+                     """
+                % (aURI)
+            )
         except:
             printDebug(
                 "... warning: the 'getClassAllSubs' query failed (maybe missing SPARQL 1.1 support?)"
@@ -337,12 +372,15 @@ class SparqlHelper(object):
         """
         aURI = aURI
         try:
-            qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+            qres = self.rdflib_graph.query(
+                """SELECT DISTINCT ?x
                      WHERE {
                          { <%s> rdfs:subPropertyOf+ ?x }
                          FILTER (!isBlank(?x))
                      }
-                     """ % (aURI))
+                     """
+                % (aURI)
+            )
         except:
             printDebug(
                 "... warning: the 'getPropAllSupers' query failed (maybe missing SPARQL 1.1 support?)"
@@ -357,12 +395,15 @@ class SparqlHelper(object):
         """
         aURI = aURI
         try:
-            qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+            qres = self.rdflib_graph.query(
+                """SELECT DISTINCT ?x
                      WHERE {
                          { ?x rdfs:subPropertyOf+ <%s> }
                          FILTER (!isBlank(?x))
                      }
-                     """ % (aURI))
+                     """
+                % (aURI)
+            )
         except:
             printDebug(
                 "... warning: the 'getPropAllSubs' query failed (maybe missing SPARQL 1.1 support?)"
@@ -375,7 +416,8 @@ class SparqlHelper(object):
         2015-08-19: currenlty not used, inferred from above
         """
         aURI = aURI
-        qres = self.rdflib_graph.query("""SELECT DISTINCT ?x
+        qres = self.rdflib_graph.query(
+            """SELECT DISTINCT ?x
                  WHERE {
                          {
                              { ?x skos:broader <%s> }
@@ -384,5 +426,24 @@ class SparqlHelper(object):
                          }
                      FILTER (!isBlank(?x))
                  }
-                 """ % (aURI, aURI))
+                 """
+            % (aURI, aURI)
+        )
         return list(qres)
+
+
+__all__ = sorted(
+        [
+                getattr(v, "__name__", k)
+                for k, v in list(globals().items())  # export
+                if (
+                (
+                        callable(v)
+                        and getattr(v, "__module__", "")
+                        == __name__  # callables from this module
+                        or k.isupper()
+                )
+                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
+        )
+        ]
+)  # neither marked internal

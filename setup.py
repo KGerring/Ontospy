@@ -61,6 +61,7 @@ def get_package_folders(top_folder, root_path):
 PROJECT_ROOT = os.path.join(HERE, "ontospy") # should be top level always
 DATA_STATIC_FILES = os.path.join(PROJECT_ROOT, "ontodocs", "media", "static")
 DATA_TEMPLATE_FILES = os.path.join(PROJECT_ROOT, "ontodocs", "media", "templates")
+
 # dynamically generate list of data folders
 PACKAGE_DATA_FOLDERS = get_package_folders(
     DATA_STATIC_FILES, PROJECT_ROOT) + get_package_folders(

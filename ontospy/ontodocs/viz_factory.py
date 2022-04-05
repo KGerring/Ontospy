@@ -3,10 +3,43 @@
 #
 #
 
-from .. import * # import main ontospy VERSION 
-from ..core.utils import *  
-from .builder import ONTODOCS_VIZ_TEMPLATES, ONTODOCS_VIZ_STATIC
+
+import os
+import shutil
+import sys
+import zipfile
+
+# http://stackoverflow.com/questions/1714027/version-number-comparison
+from distutils.version import StrictVersion
+
+# django loading requires different steps based on version
+# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
+import django
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers.rdf import TurtleLexer
+
+from .. import *  # import main ontospy VERSION
+from ..core.utils import *
+from .builder import ONTODOCS_VIZ_STATIC
+from .builder import ONTODOCS_VIZ_TEMPLATES
 from .utils import *
+
+__all__ = sorted(
+        [
+                getattr(v, "__name__", k)
+                for k, v in list(globals().items())  # export
+                if (
+                (
+                        callable(v)
+                        and getattr(v, "__module__", "")
+                        == __name__  # callables from this module
+                        or k.isupper()
+                )
+                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
+        )
+        ]
+)  # neither marked internal
 
 # Fix Python 2.x.
 try:
@@ -14,38 +47,28 @@ try:
 except NameError:
     pass
 
-# django loading requires different steps based on version
-# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
-import django
 
-# http://stackoverflow.com/questions/1714027/version-number-comparison
-from distutils.version import StrictVersion
-
-if StrictVersion(django.get_version()) > StrictVersion('1.7'):
+if StrictVersion(django.get_version()) > StrictVersion("1.7"):
     from django.conf import settings
-    from django.template import Context, Template
+    from django.template import Context
+    from django.template import Template
 
 else:
     from django.conf import settings
-    from django.template import Context, Template
+    from django.template import Context
+    from django.template import Template
 
-import zipfile
-import os, sys
-import shutil
-
-from pygments import highlight
-from pygments.lexers.rdf import TurtleLexer
-from pygments.formatters import HtmlFormatter
 
 try:
     from .CONFIG import VISUALIZATIONS_LIST
-    VISUALIZATIONS_LIST = VISUALIZATIONS_LIST['Visualizations']
+
+    VISUALIZATIONS_LIST = VISUALIZATIONS_LIST["Visualizations"]
 except:  # Mother of all exceptions
     printDebug("Visualizations configuration file not found.", fg="red")
     raise
 
 
-class VizFactory(object):
+class VizFactory:
     """
     Object encapsulating common methods for building visualizations
 
@@ -53,7 +76,7 @@ class VizFactory(object):
     """
 
     def __init__(self, ontospy_graph, title=""):
-        self.title = ''
+        self.title = ""
         self.ontospy_graph = ontospy_graph
         self.static_files = []
         self.static_url = ""  # one used in templates
@@ -70,7 +93,7 @@ class VizFactory(object):
         self.basic_context_data = self._build_basic_context()
 
     def infer_best_title(self):
-        """Selects something usable as a title for an ontospy graph. 
+        """Selects something usable as a title for an ontospy graph.
         If we have more than one ontology definition, use a generic title."""
         if self.ontospy_graph.all_ontologies:
             if len(self.ontospy_graph.all_ontologies) > 1:
@@ -126,7 +149,7 @@ class VizFactory(object):
         return contents
 
     def _buildStaticFiles(self):
-        """ move over static files so that relative imports work
+        """move over static files so that relative imports work
         Note: if a dir is passed, it is copied with all of its contents
         If the file is a zip, it is copied and extracted too
         # By default folder name is 'static', unless *output_path_static* is passed (now allowed only in special applications like KompleteVizMultiModel)
@@ -146,20 +169,20 @@ class VizFactory(object):
                 shutil.copytree(source_f, dest_f)
             else:
                 shutil.copyfile(source_f, dest_f)
-                if x.endswith('.zip'):
+                if x.endswith(".zip"):
                     printDebug("..unzipping")
-                    zip_ref = zipfile.ZipFile(os.path.join(dest_f), 'r')
+                    zip_ref = zipfile.ZipFile(os.path.join(dest_f), "r")
                     zip_ref.extractall(self.output_path_static)
                     zip_ref.close()
                     printDebug("..cleaning up")
                     os.remove(dest_f)
                     # http://superuser.com/questions/104500/what-is-macosx-folder
-                    shutil.rmtree(
-                        os.path.join(self.output_path_static, "__MACOSX"))
+                    shutil.rmtree(os.path.join(self.output_path_static, "__MACOSX"))
 
     def preview(self):
         if self.final_url:
             import webbrowser
+
             webbrowser.open(self.final_url)
         else:
             printDebug("Nothing to preview")
@@ -173,7 +196,8 @@ class VizFactory(object):
         if len(topclasses) < 3:  # massage the toplayer!
             for topclass in self.ontospy_graph.toplayer_classes:
                 for child in topclass.children():
-                    if child not in topclasses: topclasses.append(child)
+                    if child not in topclasses:
+                        topclasses.append(child)
 
         if not self.static_url:
             self.static_url = "static/"  # default
@@ -192,8 +216,7 @@ class VizFactory(object):
             "properties": self.ontospy_graph.all_properties,
             "objproperties": self.ontospy_graph.all_properties_object,
             "dataproperties": self.ontospy_graph.all_properties_datatype,
-            "annotationproperties":
-            self.ontospy_graph.all_properties_annotation,
+            "annotationproperties": self.ontospy_graph.all_properties_annotation,
             "skosConcepts": self.ontospy_graph.all_skos_concepts,
             "individuals": self.ontospy_graph.all_individuals,
         }
@@ -202,7 +225,7 @@ class VizFactory(object):
 
     def _save2File(self, contents, filename, path):
         filename = os.path.join(path, filename)
-        f = open(filename, 'wb')
+        f = open(filename, "wb")
         f.write(contents)  # python will convert \n to os.linesep
         f.close()  # you can omit in most cases as the destructor will call it
         url = "file://" + filename
@@ -214,8 +237,9 @@ class VizFactory(object):
         """
         if not output_path:
             # output_path = self.output_path_DEFAULT
-            output_path = os.path.join(self.output_path_DEFAULT,
-                                       slugify(unicode(self.title)))
+            output_path = os.path.join(
+                self.output_path_DEFAULT, slugify(str(self.title))
+            )
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
@@ -227,12 +251,13 @@ class VizFactory(object):
         using Pygments CSS
         """
         try:
-            pygments_code = highlight(ontospy_entity.rdf_source(),
-                                      TurtleLexer(), HtmlFormatter())
-            pygments_code_css = HtmlFormatter().get_style_defs('.highlight')
+            pygments_code = highlight(
+                ontospy_entity.rdf_source(), TurtleLexer(), HtmlFormatter()
+            )
+            pygments_code_css = HtmlFormatter().get_style_defs(".highlight")
             return {
                 "pygments_code": pygments_code,
-                "pygments_code_css": pygments_code_css
+                "pygments_code_css": pygments_code_css,
             }
         except Exception as e:
             printDebug("Error: Pygmentize Failed", "red")

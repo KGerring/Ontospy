@@ -6,41 +6,46 @@
 #
 #
 
-import click
+
 import os
+
+# http://stackoverflow.com/questions/1714027/version-number-comparison
+from distutils.version import StrictVersion
 from shutil import copyfile
+
+import click
+
+# django loading requires different steps based on version
+# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
+import django
+
+from .. import *
+from ..core import actions as ontospy_actions
+from ..core import manager as ontospy_manager
+from ..core.utils import *
+
 # Fix Python 2.x.
 try:
     input = raw_input
 except NameError:
     pass
-# django loading requires different steps based on version
-# https://docs.djangoproject.com/en/dev/releases/1.7/#standalone-scripts
-import django
-# http://stackoverflow.com/questions/1714027/version-number-comparison
-from distutils.version import StrictVersion
 
-from ..core import actions as ontospy_actions
-from ..core import manager as ontospy_manager
-from ..core.utils import *
-
-from .. import *
 
 _dirname, _filename = os.path.split(os.path.abspath(__file__))
 ONTODOCS_VIZ_TEMPLATES = _dirname + "/media/templates/"
 ONTODOCS_VIZ_STATIC = _dirname + "/media/static/"
 
-if StrictVersion(django.get_version()) > StrictVersion('1.7'):
+if StrictVersion(django.get_version()) > StrictVersion("1.7"):
     from django.conf import settings
-    from django.template import Context, Template
+    from django.template import Context
+    from django.template import Template
 
     settings.configure()
     django.setup()
     settings.TEMPLATES = [
         {
-            'BACKEND':
-            'django.template.backends.django.DjangoTemplates',
-            'DIRS': [
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [
                 # insert your TEMPLATE_DIRS here
                 ONTODOCS_VIZ_TEMPLATES + "html-single",
                 ONTODOCS_VIZ_TEMPLATES + "html-multi",
@@ -48,19 +53,18 @@ if StrictVersion(django.get_version()) > StrictVersion('1.7'):
                 ONTODOCS_VIZ_TEMPLATES + "d3",
                 ONTODOCS_VIZ_TEMPLATES + "misc",
             ],
-            'APP_DIRS':
-            True,
-            'OPTIONS': {
-                'context_processors': [
+            "APP_DIRS": True,
+            "OPTIONS": {
+                "context_processors": [
                     # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
                     # list if you haven't customized them:
-                    'django.contrib.auth.context_processors.auth',
-                    'django.template.context_processors.debug',
-                    'django.template.context_processors.i18n',
-                    'django.template.context_processors.media',
-                    'django.template.context_processors.static',
-                    'django.template.context_processors.tz',
-                    'django.contrib.messages.context_processors.messages',
+                    "django.contrib.auth.context_processors.auth",
+                    "django.template.context_processors.debug",
+                    "django.template.context_processors.i18n",
+                    "django.template.context_processors.media",
+                    "django.template.context_processors.static",
+                    "django.template.context_processors.tz",
+                    "django.contrib.messages.context_processors.messages",
                 ],
             },
         },
@@ -68,14 +72,17 @@ if StrictVersion(django.get_version()) > StrictVersion('1.7'):
 
 else:
     from django.conf import settings
-    from django.template import Context, Template
+    from django.template import Context
+    from django.template import Template
 
     settings.configure()
 
 try:
-    from .CONFIG import VISUALIZATIONS_LIST, BOOTSWATCH_THEMES, BOOTSWATCH_THEME_DEFAULT
+    from .CONFIG import BOOTSWATCH_THEME_DEFAULT
+    from .CONFIG import BOOTSWATCH_THEMES
+    from .CONFIG import VISUALIZATIONS_LIST
 
-    VISUALIZATIONS_LIST = VISUALIZATIONS_LIST['Visualizations']
+    VISUALIZATIONS_LIST = VISUALIZATIONS_LIST["Visualizations"]
 except:  # Mother of all exceptions
     printDebug("Visualizations configuration file not found.", fg="red")
     raise
@@ -83,9 +90,9 @@ except:  # Mother of all exceptions
 
 def show_types():
     for n, t in enumerate(VISUALIZATIONS_LIST):
-        printInfo("%d. %s" % (n + 1, t['Title']), "green")
-    printInfo("Note: select a viz type by using its numerical index.",
-               "comment")
+        printInfo("%d. %s" % (n + 1, t["Title"]), "green")
+    printInfo("Note: select a viz type by using its numerical index.", "comment")
+
 
 def show_themes():
     for t in BOOTSWATCH_THEMES:
@@ -113,20 +120,19 @@ def ask_visualization():
     """
     printDebug(
         "Please choose an output format for the ontology visualization: (q=quit)\n",
-        "important")
+        "important",
+    )
     while True:
         text = ""
         for viz in VISUALIZATIONS_LIST:
-            text += "%d) %s\n" % (VISUALIZATIONS_LIST.index(viz) + 1,
-                                  viz['Title'])
-        var = input(text + ">")
+            text += "%d) %s\n" % (VISUALIZATIONS_LIST.index(viz) + 1, viz["Title"])
+        var = eval(input(text + ">"))
         if var == "q":
             return ""
         else:
             try:
                 n = int(var) - 1
-                test = VISUALIZATIONS_LIST[
-                    n]  # throw exception if number wrong
+                test = VISUALIZATIONS_LIST[n]  # throw exception if number wrong
                 return n
             except:
                 printDebug("Invalid selection. Please try again.", "red")
@@ -164,44 +170,54 @@ def build_visualization(ontouri, g, viz_index, path=None, title="", theme=""):
 
     this_viz = VISUALIZATIONS_LIST[viz_index]
 
-    if this_viz['ID'] == "html-simple":
+    if this_viz["ID"] == "html-simple":
         from .viz.viz_html_single import HTMLVisualizer
+
         v = HTMLVisualizer(g, title)
 
-    elif this_viz['ID'] == "html-complex":
+    elif this_viz["ID"] == "html-complex":
         from .viz.viz_html_multi import KompleteViz
+
         v = KompleteViz(g, title, theme)
 
-    elif this_viz['ID'] == "markdown":
+    elif this_viz["ID"] == "markdown":
         from .viz.viz_markdown import MarkdownViz
+
         v = MarkdownViz(g, title)
 
-    elif this_viz['ID'] == "d3-dendogram":
+    elif this_viz["ID"] == "d3-dendogram":
         from .viz.viz_d3dendogram import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "d3-bubble-chart":
+    elif this_viz["ID"] == "d3-bubble-chart":
         from .viz.viz_d3bubble_chart import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "d3-pack-hierarchy":
+    elif this_viz["ID"] == "d3-pack-hierarchy":
         from .viz.viz_d3pack_hierarchy import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "d3-bar-hierarchy":
+    elif this_viz["ID"] == "d3-bar-hierarchy":
         from .viz.viz_d3bar_hierarchy import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "d3-partition-table":
+    elif this_viz["ID"] == "d3-partition-table":
         from .viz.viz_d3partition_table import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "d3-rotating-cluster":
+    elif this_viz["ID"] == "d3-rotating-cluster":
         from .viz.viz_d3rotating_cluster import Dataviz
+
         v = Dataviz(g, title)
 
-    elif this_viz['ID'] == "sigma-force-directed":
+    elif this_viz["ID"] == "sigma-force-directed":
         from .viz.viz_sigmajs import Dataviz
+
         v = Dataviz(g, title)
 
     else:
@@ -222,17 +238,14 @@ def saveVizGithub(contents, ontouri):
     """
     title = "Ontospy: ontology export"
     readme = """This ontology documentation was automatically generated with Ontospy (https://github.com/lambdamusic/Ontospy).
-	The graph URI is: %s""" % str(ontouri)
+	The graph URI is: %s""" % str(
+        ontouri
+    )
     files = {
-        'index.html': {
-            'content': contents
-        },
-        'README.txt': {
-            'content': readme
-        },
-        'LICENSE.txt': {
-            'content':
-            """The MIT License (MIT)
+        "index.html": {"content": contents},
+        "README.txt": {"content": readme},
+        "LICENSE.txt": {
+            "content": """The MIT License (MIT)
 
 Copyright (c) 2016 Ontospy project [http://lambdamusic.github.io/Ontospy/]
 
@@ -253,7 +266,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
-        }
+        },
     }
     urls = save_anonymous_gist(title, files)
     return urls

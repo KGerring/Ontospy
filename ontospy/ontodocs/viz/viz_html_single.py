@@ -5,10 +5,12 @@
 # VIZ HTML SINGLE - outputs documentation within a single HTML page
 # ==================
 
-import os, sys
 
-from ..utils import *
+import os
+import sys
+
 from ..builder import *  # loads and sets up Django
+from ..utils import *
 from ..viz_factory import VizFactory
 
 
@@ -29,7 +31,7 @@ class HTMLVisualizer(VizFactory):
 
 # if called directly, for testing purposes run the basic HTML rendering
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     TEST_ONLINE = False
 

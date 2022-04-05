@@ -3,6 +3,13 @@
 
 # this allows to load with 'import ontospy', and using 'ontospy.Ontospy'
 
-from .VERSION import __version__, VERSION
+
+from .core.entities import OntoClass
+from .core.entities import Ontology
+from .core.entities import OntoProperty
+from .core.entities import OntoShape
+from .core.entities import OntoSKOSConcept
+from .core.entities import RdfEntity
 from .core.ontospy import Ontospy
-from .core.entities import RdfEntity, Ontology, OntoClass, OntoProperty, OntoSKOSConcept, OntoShape
+from .VERSION import VERSION
+from .VERSION import __version__

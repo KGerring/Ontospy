@@ -11,173 +11,170 @@ Use the interpreter interactively to create a turtle RDF model.
 
 """
 
-from __future__ import print_function
 
-import sys, os
+import os
+import sys
 
-try:
-	import urllib2
-except ImportError:
-	import urllib as urllib2
-
-import rdflib	 # so we have it available as a namespace
-from rdflib import exceptions, URIRef, RDFS, RDF, BNode, OWL
-from rdflib.namespace import Namespace, NamespaceManager
-
+import rdflib  # so we have it available as a namespace
+from rdflib import OWL
+from rdflib import RDF
+from rdflib import RDFS
+from rdflib import BNode
+from rdflib import URIRef
+from rdflib import exceptions
+from rdflib.namespace import Namespace
+from rdflib.namespace import NamespaceManager
 
 from .. import main
 
-
-
+try:
+    import urllib.request, urllib.error, urllib.parse
+except ImportError:
+    import urllib as urllib2
 
 
 class Sketch(object):
-	"""
-	====Sketch v 0.3====
+    """
+    ====Sketch v 0.3====
 
-	add()  ==> add turtle statements to the graph (http://www.w3.org/TR/turtle/)
-	...........SHORTCUTS:
-	...........'class' = owl:Class
-	...........'sub' = rdfs:subClassOf
+    add()  ==> add turtle statements to the graph (http://www.w3.org/TR/turtle/)
+    ...........SHORTCUTS:
+    ...........'class' = owl:Class
+    ...........'sub' = rdfs:subClassOf
 
-	show() ==> shows the graph. Can take an OPTIONAL argument for the format.
-	...........eg one of['xml', 'n3', 'turtle', 'nt', 'pretty-xml', dot']
+    show() ==> shows the graph. Can take an OPTIONAL argument for the format.
+    ...........eg one of['xml', 'n3', 'turtle', 'nt', 'pretty-xml', dot']
 
-	clear()	 ==> clears the graph
-	...........all triples are removed
+    clear()	 ==> clears the graph
+    ...........all triples are removed
 
-	omnigraffle() ==> creates a dot file and opens it with omnigraffle
-	...........First you must set Omingraffle as your system default app for dot files!
+    omnigraffle() ==> creates a dot file and opens it with omnigraffle
+    ...........First you must set Omingraffle as your system default app for dot files!
 
-	quit() ==> exit
+    quit() ==> exit
 
-	====Happy modeling====
-	"""
-	def __init__(self, text=""):
-		super(Sketch, self).__init__()
+    ====Happy modeling====
+    """
 
-		self.rdflib_graph = rdflib.Graph()
-		self.namespace_manager = NamespaceManager(self.rdflib_graph)
+    def __init__(self, text=""):
+        super(Sketch, self).__init__()
 
-		self.SUPPORTED_FORMATS = ['xml', 'n3', 'turtle', 'nt', 'pretty-xml', 'dot']
+        self.rdflib_graph = rdflib.Graph()
+        self.namespace_manager = NamespaceManager(self.rdflib_graph)
 
-		PREFIXES = [
-					("", "http://this.sketch#"),
-					("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
-					("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
-					("xml", "http://www.w3.org/XML/1998/namespace"),
-					("xsd", "http://www.w3.org/2001/XMLSchema#"),
-					('foaf', "http://xmlns.com/foaf/0.1/"),
-					("skos", "http://www.w3.org/2004/02/skos/core#"),
-					("owl", "http://www.w3.org/2002/07/owl#"),
-					]
-		for pref in PREFIXES:
-			self.bind(pref)
-		if text:
-			self.add(text)
+        self.SUPPORTED_FORMATS = ["xml", "n3", "turtle", "nt", "pretty-xml", "dot"]
 
-	def add(self, text="", default_continuousAdd=True):
-		"""add some turtle text"""
-		if not text and default_continuousAdd:
-			self.continuousAdd()
-		else:
-			pprefix = ""
-			for x,y in self.rdflib_graph.namespaces():
-				pprefix += "@prefix %s: <%s> . \n" % (x, y)
-			# add final . if missing
-			if text and (not text.strip().endswith(".")):
-				text += " ."
-			# smart replacements
-			text = text.replace(" sub ", " rdfs:subClassOf ")
-			text = text.replace(" class ", " owl:Class ")
-			# finally
-			self.rdflib_graph.parse(data=pprefix+text, format="turtle")
+        PREFIXES = [
+            ("", "http://this.sketch#"),
+            ("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+            ("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
+            ("xml", "http://www.w3.org/XML/1998/namespace"),
+            ("xsd", "http://www.w3.org/2001/XMLSchema#"),
+            ("foaf", "http://xmlns.com/foaf/0.1/"),
+            ("skos", "http://www.w3.org/2004/02/skos/core#"),
+            ("owl", "http://www.w3.org/2002/07/owl#"),
+        ]
+        for pref in PREFIXES:
+            self.bind(pref)
+        if text:
+            self.add(text)
 
+    def add(self, text="", default_continuousAdd=True):
+        """add some turtle text"""
+        if not text and default_continuousAdd:
+            self.continuousAdd()
+        else:
+            pprefix = ""
+            for x, y in self.rdflib_graph.namespaces():
+                pprefix += "@prefix %s: <%s> . \n" % (x, y)
+            # add final . if missing
+            if text and (not text.strip().endswith(".")):
+                text += " ."
+            # smart replacements
+            text = text.replace(" sub ", " rdfs:subClassOf ")
+            text = text.replace(" class ", " owl:Class ")
+            # finally
+            self.rdflib_graph.parse(data=pprefix + text, format="turtle")
 
-	# note: problem here if typying ### on first line!
-	def continuousAdd(self):
-		print("Multi-line input. Enter ### when finished.")
-		temp = ""
-		sentinel = "###"
-		for line in iter(input, sentinel):
-			if line.strip() == sentinel:
-				break
-			if not line.strip().endswith("."):
-				line += " ."
-			temp += "%s" % line
-		self.add(temp, False) # default_continuousAdd=False
+    # note: problem here if typying ### on first line!
+    def continuousAdd(self):
+        print("Multi-line input. Enter ### when finished.")
+        temp = ""
+        sentinel = "###"
+        for line in iter(input, sentinel):
+            if line.strip() == sentinel:
+                break
+            if not line.strip().endswith("."):
+                line += " ."
+            temp += "%s" % line
+        self.add(temp, False)  # default_continuousAdd=False
 
-	def bind(self, prefixTuple):
-		p, k = prefixTuple
-		self.rdflib_graph.bind(p, k)
+    def bind(self, prefixTuple):
+        p, k = prefixTuple
+        self.rdflib_graph.bind(p, k)
 
-	def clear(self):
-		""""
-		Clears the graph
-			@todo add ability to remove specific triples
-		"""
-		self.rdflib_graph.remove((None, None, None))
+    def clear(self):
+        """ "
+        Clears the graph
+                @todo add ability to remove specific triples
+        """
+        self.rdflib_graph.remove((None, None, None))
 
+    def rdf_source(self, aformat="turtle"):
+        """
+        Serialize graph using the format required
+        """
+        if aformat and aformat not in self.SUPPORTED_FORMATS:
+            return "Sorry. Allowed formats are %s" % str(self.SUPPORTED_FORMATS)
+        if aformat == "dot":
+            return self.__serializedDot()
+        else:
+            # use stardard rdf serializations
+            return self.rdflib_graph.serialize(format=aformat)
 
-	def rdf_source(self, aformat="turtle"):
-		"""
-		Serialize graph using the format required
-		"""
-		if aformat and aformat not in self.SUPPORTED_FORMATS:
-			return "Sorry. Allowed formats are %s" % str(self.SUPPORTED_FORMATS)
-		if aformat == "dot":
-			return self.__serializedDot()
-		else:
-			# use stardard rdf serializations
-			return self.rdflib_graph.serialize(format=aformat)
+    def __serializedDot(self):
+        """
+        DOT format:
+        digraph graphname {
+                 a -> b [label=instanceOf];
+                 b -> d [label=isA];
+         }
+        """
+        temp = ""
+        for x, y, z in self.rdflib_graph.triples((None, None, None)):
+            temp += """"%s" -> "%s" [label="%s"];\n""" % (
+                self.namespace_manager.normalizeUri(x),
+                self.namespace_manager.normalizeUri(z),
+                self.namespace_manager.normalizeUri(y),
+            )
+        temp = "digraph graphname {\n%s}" % temp
+        return temp
 
-	def __serializedDot(self):
-		"""
-		DOT format:
-		digraph graphname {
-			 a -> b [label=instanceOf];
-			 b -> d [label=isA];
-		 }
-		"""
-		temp = ""
-		for x,y,z in self.rdflib_graph.triples((None, None, None)):
-			temp += """"%s" -> "%s" [label="%s"];\n""" % (self.namespace_manager.normalizeUri(x), self.namespace_manager.normalizeUri(z), self.namespace_manager.normalizeUri(y))
-		temp = "digraph graphname {\n%s}" % temp
-		return temp
+    def omnigraffle(self):
+        """tries to open an export directly in omnigraffle"""
+        temp = self.rdf_source("dot")
 
+        try:  # try to put in the user/tmp folder
+            from os.path import expanduser
 
-	def omnigraffle(self):
-		""" tries to open an export directly in omnigraffle """
-		temp = self.rdf_source("dot")
+            home = expanduser("~")
+            filename = home + "/tmp/turtle_sketch.dot"
+            f = open(filename, "w")
+        except:
+            filename = "turtle_sketch.dot"
+            f = open(filename, "w")
+        f.write(temp)
+        f.close()
+        try:
+            os.system("open " + filename)
+        except:
+            os.system("start " + filename)
 
-		try:  # try to put in the user/tmp folder
-			from os.path import expanduser
-			home = expanduser("~")
-			filename = home + "/tmp/turtle_sketch.dot"
-			f = open(filename, "w")
-		except:
-			filename = "turtle_sketch.dot"
-			f = open(filename, "w")
-		f.write(temp)
-		f.close()
-		try:
-			os.system("open " + filename)
-		except:
-			os.system("start " + filename)
+    def show(self, aformat="turtle"):
+        print((self.rdf_source(aformat)))
 
-
-	def show(self, aformat="turtle"):
-		print(self.rdf_source(aformat))
-
-	def docs(self):
-		print(self.__docs__)
-
-
-
-
-
-
-
+    def docs(self):
+        print((self.__docs__))
 
 
 ##################
@@ -187,62 +184,65 @@ class Sketch(object):
 ##################
 
 
-
-
 def main(argv=None):
-	"""
-	September 18, 2014: if an arg is passed, we visualize it
-	Otherwise a simple shell gets opened.
+    """
+    September 18, 2014: if an arg is passed, we visualize it
+    Otherwise a simple shell gets opened.
 
-	"""
+    """
 
-	print("Ontospy " + ontospy.VERSION)
-	ontospy.get_or_create_home_repo()
+    print(("Ontospy " + ontospy.VERSION))
+    ontospy.get_or_create_home_repo()
 
-	if argv:
-		print("Argument passing not implemented yet")
-		if False:
-			onto = Model(argv[0])
-			for x in onto.get_classes():
-				print(x)
-			onto.buildPythonClasses()
-			s = Sketch()
+    if argv:
+        print("Argument passing not implemented yet")
+        if False:
+            onto = Model(argv[0])
+            for x in onto.get_classes():
+                print(x)
+            onto.buildPythonClasses()
+            s = Sketch()
 
-	else:
+    else:
 
-		intro = """Good morning. Ready to Turtle away. Type docs() for help."""
-		# idea: every time provide a different ontology maxim!
+        intro = """Good morning. Ready to Turtle away. Type docs() for help."""
+        # idea: every time provide a different ontology maxim!
 
-		def docs():
-			print("\n".join([x.strip() for x in Sketch.__doc__.splitlines()]))
+        def docs():
+            print(("\n".join([x.strip() for x in Sketch.__doc__.splitlines()])))
 
-		default_sketch = Sketch()
+        default_sketch = Sketch()
 
-		def add(text=""):
-			default_sketch.add(text)
-		def show(aformat=None):
-			if aformat:
-				default_sketch.show(aformat)
-			else:
-				default_sketch.show()
-		def bind(prefixTuple):
-			default_sketch.bind(prefixTuple)
-		def clear():
-			default_sketch.clear()
-		def omnigraffle():
-			default_sketch.omnigraffle()
+        def add(text=""):
+            default_sketch.add(text)
+
+        def show(aformat=None):
+            if aformat:
+                default_sketch.show(aformat)
+            else:
+                default_sketch.show()
+
+        def bind(prefixTuple):
+            default_sketch.bind(prefixTuple)
+
+        def clear():
+            default_sketch.clear()
+
+        def omnigraffle():
+            default_sketch.omnigraffle()
+
+        try:
+            # note: this requires IPython 0.11 or above
+            import IPython
+
+            IPython.embed(banner1=intro)
+        except:
+            import code
+
+            code.interact(banner=intro, local=dict(globals(), **locals()))
+    # finally
+    sys.exit(0)
 
 
-		try:
-			# note: this requires IPython 0.11 or above
-			import IPython
-			IPython.embed(banner1=intro)
-		except:
-			import code
-			code.interact(banner=intro, local=dict(globals(), **locals()))
-	# finally
-	sys.exit(0)
-
-
-if __name__ == '__main__':
-	main(sys.argv[1:])
+if __name__ == "__main__":
+    main(sys.argv[1:])

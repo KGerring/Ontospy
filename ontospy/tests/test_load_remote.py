@@ -9,57 +9,75 @@ Run like this:
 
 """
 
-from __future__ import print_function
 
-import unittest, os, sys
+import os
+import sys
 import time
+import unittest
 
 from .. import *
 from ..core import *
 from ..core.utils import *
-
 
 # sanity check
 printDebug(f"-------------------\nOntospy {VERSION}\n-------------------")
 
 
 class TestLoadOntologies(unittest.TestCase):
+    def test2_load_url(self):
+        """
+        Check if the ontologies in BOOTSTRAP list load ok
+        """
+        MAX = 1
+        ONTOS = [o for o in BOOTSTRAP_ONTOLOGIES[:MAX]]
 
-
-	def test2_load_url(self):
-		"""
-		Check if the ontologies in BOOTSTRAP list load ok
-		"""
-		MAX = 1
-		ONTOS = [o for o in BOOTSTRAP_ONTOLOGIES[:MAX]]
-
-		printDebug(f"""\n=================\n
+        printDebug(
+            f"""\n=================\n
 		\nTEST 2: Loading some sample online ontologies => 
 		\n {ONTOS} 
 		\nFor each model detailed entities descriptions are printed out.
-		\n\n=================""", bg="blue", fg="white")
+		\n\n=================""",
+            bg="blue",
+            fg="white",
+        )
 
-		time.sleep(3)
+        time.sleep(3)
 
-		for f in BOOTSTRAP_ONTOLOGIES[:MAX]:
+        for f in BOOTSTRAP_ONTOLOGIES[:MAX]:
 
-			printDebug("\n*****\nTest: loading remote uri... > %s\n*****" % str(f), 	bg="green")
+            printDebug(
+                "\n*****\nTest: loading remote uri... > %s\n*****" % str(f), bg="green"
+            )
 
-			try:
-				o = Ontospy(f, verbose=True)
+            try:
+                o = Ontospy(f, verbose=True)
 
-				print("CLASS TREE")
-				o.printClassTree()
-				print("----------")
+                print("CLASS TREE")
+                o.printClassTree()
+                print("----------")
 
-			except:
-				printDebug("An error occured - are you sure this resource is online?")
-				pass
+            except:
+                printDebug("An error occured - are you sure this resource is online?")
+                pass
+
+            print("Success.\n")
 
 
-			print("Success.\n")
-
-
+__all__ = sorted(
+        [
+                getattr(v, "__name__", k)
+                for k, v in list(globals().items())  # export
+                if (
+                (
+                        callable(v)
+                        and getattr(v, "__module__", "")
+                        == __name__  # callables from this module
+                        or k.isupper()
+                )
+                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
+        )
+        ]
+)  # neither marked internal
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

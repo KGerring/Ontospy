@@ -144,11 +144,17 @@ rdfs:subPropertyOf
 
 """
 
+
 rdfschema = [
     ("rdf:Property", "the class of properties"),
-    ("rdf:Statement",
-     "the class of statements: rdf:Statement, rdf:subject, rdf:predicate, rdf:object are used for reification"),
-    ("rdf:type", "an instance of rdf:Property used to state that a resource is an instance of a class"),
+    (
+        "rdf:Statement",
+        "the class of statements: rdf:Statement, rdf:subject, rdf:predicate, rdf:object are used for reification",
+    ),
+    (
+        "rdf:type",
+        "an instance of rdf:Property used to state that a resource is an instance of a class",
+    ),
     ("rdf:subject", " the subject of the subject RDF statement"),
     ("rdf:predicate", " the predicate of the subject RDF statement"),
     ("rdf:object", " the object of the subject RDF statement"),
@@ -212,7 +218,6 @@ owlschema = [
     ("owl:versionInfo", ""),
     ("owl:versionIRI", ""),
     ("owl:withRestrictions", ""),
-    
     ("owl:AllDisjointProperties", ""),
     ("owl:AllDifferent", ""),
     ("owl:AllDisjointClasses", ""),
@@ -241,4 +246,3 @@ owlschema = [
     ("owl:SymmetricProperty", ""),
     ("owl:TransitiveProperty", ""),
 ]
-

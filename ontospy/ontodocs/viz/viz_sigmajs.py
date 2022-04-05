@@ -7,15 +7,14 @@
 # ==================
 
 
-import os, sys
 import json
+import os
+import random
+import sys
 
-from ..utils import *
 from ..builder import *  # loads and sets up Django
+from ..utils import *
 from ..viz_factory import VizFactory
-
-
-
 
 
 class Dataviz(VizFactory):
@@ -24,14 +23,12 @@ class Dataviz(VizFactory):
 
     """
 
-
     def __init__(self, ontospy_graph, title=""):
         """
         Init
         """
         super(Dataviz, self).__init__(ontospy_graph, title)
         self.static_files = ["libs/sigma", "libs/jquery"]
-
 
     def _buildTemplates(self):
         """
@@ -41,11 +38,10 @@ class Dataviz(VizFactory):
         c_mydict = build_class_json(self.ontospy_graph.all_classes)
         JSON_DATA_CLASSES = json.dumps(c_mydict)
 
-
         extra_context = {
-                        "ontograph": self.ontospy_graph,
-         'JSON_DATA_CLASSES' : JSON_DATA_CLASSES,
-                        }
+            "ontograph": self.ontospy_graph,
+            "JSON_DATA_CLASSES": JSON_DATA_CLASSES,
+        }
 
         # Ontology - MAIN PAGE
         contents = self._renderTemplate("misc/sigmajs.html", extraContext=extra_context)
@@ -55,10 +51,6 @@ class Dataviz(VizFactory):
         return main_url
 
 
-
-
-import random
-
 def _classColor(x):
     if not x.parents():
         return "#FFD8DD"
@@ -67,62 +59,64 @@ def _classColor(x):
     else:
         return "#C8FFB3"
 
+
 def build_class_json(classes):
-    nodes = [{
-                    "id": "owlthing",
-                    "label": "owl:Thing",
-                    "x": random.random(),
-                    "y": random.random(),
-                    "color" : "grey",
-                    "size": 5
-                }]
+    nodes = [
+        {
+            "id": "owlthing",
+            "label": "owl:Thing",
+            "x": random.random(),
+            "y": random.random(),
+            "color": "grey",
+            "size": 5,
+        }
+    ]
     edges = []
     for x in classes:
         temp = {
-                    "id": x.id,
-                    "label": x.bestLabel(quotes=False),
-                    "x": random.random(),
-                    "y": random.random(),
-                    "color" : _classColor(x),
-                    "size": len(x.descendants()) or 1
-                }
+            "id": x.id,
+            "label": x.bestLabel(quotes=False),
+            "x": random.random(),
+            "y": random.random(),
+            "color": _classColor(x),
+            "size": len(x.descendants()) or 1,
+        }
         nodes.append(temp)
 
         if not x.parents():
             # add a relationship to OWL THING
-            edges.append({
-                "id": "%s-%s" % (x.id, "owlthing"),
-                "source": "owlthing",
-                "target": x.id,
-                "color": '#ccc',
-                "hover_color": '#000'
-            })
+            edges.append(
+                {
+                    "id": "%s-%s" % (x.id, "owlthing"),
+                    "source": "owlthing",
+                    "target": x.id,
+                    "color": "#ccc",
+                    "hover_color": "#000",
+                }
+            )
 
         for el in x.children():
             temp2 = {
                 "id": "%s-%s" % (x.id, el.id),
                 "source": x.id,
                 "target": el.id,
-                 # "type": 'curve',
-                "color": '#ccc',
-                "hover_color": '#000'
+                # "type": 'curve',
+                "color": "#ccc",
+                "hover_color": "#000",
             }
             edges.append(temp2)
 
     result = {
-            "nodes": nodes ,
-            "edges" : edges,
-        }
+        "nodes": nodes,
+        "edges": edges,
+    }
 
     return result
 
 
-
-
-
 # if called directly, for testing purposes pick a random ontology
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     TEST_ONLINE = False
     try:
@@ -137,13 +131,6 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt as e:  # Ctrl-C
         raise e
-
-
-
-
-
-
-
 
 
 def run(graph, save_on_github=False, main_entity=None):
@@ -176,33 +163,39 @@ def run(graph, save_on_github=False, main_entity=None):
         s_total = len(graph.all_skos_concepts)
 
         # hack to make sure that we have a default top level object
-        JSON_DATA_CLASSES = json.dumps({'children' : c_mylist, 'name' : 'owl:Thing', 'id' : "None" })
-        JSON_DATA_PROPERTIES = json.dumps({'children' : p_mylist, 'name' : 'Properties', 'id' : "None" })
-        JSON_DATA_CONCEPTS = json.dumps({'children' : s_mylist, 'name' : 'Concepts', 'id' : "None" })
+        JSON_DATA_CLASSES = json.dumps(
+            {"children": c_mylist, "name": "owl:Thing", "id": "None"}
+        )
+        JSON_DATA_PROPERTIES = json.dumps(
+            {"children": p_mylist, "name": "Properties", "id": "None"}
+        )
+        JSON_DATA_CONCEPTS = json.dumps(
+            {"children": s_mylist, "name": "Concepts", "id": "None"}
+        )
 
-
-    c = Context({
-                    "ontology": ontology,
-                    "main_uri" : uri,
-                    "STATIC_PATH": ONTODOCS_VIZ_STATIC,
-                    "classes": graph.classes,
-                    "classes_TOPLAYER": len(graph.toplayer_classes),
-                    "properties": graph.all_properties,
-                    "properties_TOPLAYER": len(graph.toplayer_properties),
-                    "skosConcepts": graph.all_skos_concepts,
-                    "skosConcepts_TOPLAYER": len(graph.toplayer_skos),
-                    # "TOTAL_CLASSES": c_total,
-                    # "TOTAL_PROPERTIES": p_total,
-                    # "TOTAL_CONCEPTS": s_total,
-                    'JSON_DATA_CLASSES' : JSON_DATA_CLASSES,
-                    # 'JSON_DATA_PROPERTIES' : JSON_DATA_PROPERTIES,
-                    # 'JSON_DATA_CONCEPTS' : JSON_DATA_CONCEPTS,
-                })
+    c = Context(
+        {
+            "ontology": ontology,
+            "main_uri": uri,
+            "STATIC_PATH": ONTODOCS_VIZ_STATIC,
+            "classes": graph.classes,
+            "classes_TOPLAYER": len(graph.toplayer_classes),
+            "properties": graph.all_properties,
+            "properties_TOPLAYER": len(graph.toplayer_properties),
+            "skosConcepts": graph.all_skos_concepts,
+            "skosConcepts_TOPLAYER": len(graph.toplayer_skos),
+            # "TOTAL_CLASSES": c_total,
+            # "TOTAL_PROPERTIES": p_total,
+            # "TOTAL_CONCEPTS": s_total,
+            "JSON_DATA_CLASSES": JSON_DATA_CLASSES,
+            # 'JSON_DATA_PROPERTIES' : JSON_DATA_PROPERTIES,
+            # 'JSON_DATA_CONCEPTS' : JSON_DATA_CONCEPTS,
+        }
+    )
 
     rnd = t.render(c)
 
     return safe_str(rnd)
-
 
 
 #

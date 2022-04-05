@@ -5,25 +5,22 @@
 
 # >sudo pip install github3.py
 
-from __future__ import print_function
 
 from github3 import create_gist
 
 files = {
-    'spam.txt' : {
-        'content': 'What... is the air-speed velocity of an unladen swallow?'
-        }
-    }
+    "spam.txt": {"content": "What... is the air-speed velocity of an unladen swallow?"}
+}
 try:
-    gist = create_gist('Answer this to cross the bridge', files)
+    gist = create_gist("Answer this to cross the bridge", files)
     comments = [c for c in gist.iter_comments()]
     # []
 
-    comment = gist.create_comment('Bogus. This will not work.')
+    comment = gist.create_comment("Bogus. This will not work.")
 
-# Which of course it didn't, because you're not logged in
-# comment == None
-    print(gist.html_url)
+    # Which of course it didn't, because you're not logged in
+    # comment == None
+    print((gist.html_url))
 
 
 # works also in blocks eg from
