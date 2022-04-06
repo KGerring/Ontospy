@@ -84,20 +84,69 @@ BOOTSTRAP_ENDPOINTS = [
 
 import rdflib.namespace, rdflib.extras, rdflib.plugins, rdflib.tools
     #tools
+from ontospy.core import actions
+from ontospy.core import entities
+from ontospy.core import manager
+from ontospy.core import namespaces
+from ontospy.core import ontospy
+from ontospy.core import rdf_loader
+from ontospy.core import sparql_helper
+from ontospy.core import utils
 
+from ontospy.core.actions import (SOURCE, action_analyze, action_bootstrap,
+                                  action_cache_reset, action_erase,
+                                  action_import, action_import_folder,
+                                  action_jsonld_playground, action_listlocal,
+                                  action_reveal_library, action_serialize,
+                                  action_update_library_location,
+                                  action_visualize, action_webimport,
+                                  actions_delete,)
+from ontospy.core.entities import (OntoClass, OntoProperty, OntoSKOSConcept,
+                                   OntoShape, Ontology, RdfEntity,)
+from ontospy.core.manager import (del_pickled_ontology, do_pickle_ontology,
+                                  get_home_location, get_localontologies,
+                                  get_or_create_home_repo,
+                                  get_pickled_ontology, get_random_ontology,
+                                  rename_pickled_ontology,)
+from ontospy.core.ontospy import (Ontospy,)
+from ontospy.core.rdf_loader import (RDFLoader, test,)
+from ontospy.core.sparql_helper import (DEFAULT_LANGUAGE, SparqlHelper,)
+from ontospy.core.utils import (DEFAULT_LANGUAGE, NAMESPACES_DEFAULT,
+                                addQuotes, bcolors, entityComment, entityLabel,
+                                firstEnglishStringInList, firstStringInList,
+                                get_files_with_extensions, guess_fileformat,
+                                inferMainPropertyType, inferNamespacePrefix,
+                                inferURILocalSymbol, isBlankNode, is_http,
+                                joinStringsInList, list_chunks, niceString2uri,
+                                playSound, pprint2columns, pprinttable,
+                                printBasicInfo, printDebug, printGenericTree,
+                                printInfo, remove_duplicates, safe_str,
+                                save_anonymous_gist, shellPrintOverview,
+                                slugify, sortByNamespacePrefix,
+                                sort_uri_list_by_name, split_list, truncate,
+                                try_sort_fmt_opts, uri2niceString,)
 
-__all__ = sorted(
-        [
-                getattr(v, "__name__", k)
-                for k, v in list(globals().items())  # export
-                if (
-                (
-                        callable(v)
-                        and getattr(v, "__module__", "")
-                        == __name__  # callables from this module
-                        or k.isupper()
-                )
-                and not str(getattr(v, "__name__", k)).startswith("__")  # or CONSTANTS
-        )
-        ]
-)  # neither marked internal
+__all__ = ['DEFAULT_LANGUAGE', 'NAMESPACES_DEFAULT', 'OntoClass',
+           'OntoProperty', 'OntoSKOSConcept', 'OntoShape', 'Ontology',
+           'Ontospy', 'RDFLoader', 'RdfEntity', 'SOURCE', 'SparqlHelper',
+           'action_analyze', 'action_bootstrap', 'action_cache_reset',
+           'action_erase', 'action_import', 'action_import_folder',
+           'action_jsonld_playground', 'action_listlocal',
+           'action_reveal_library', 'action_serialize',
+           'action_update_library_location', 'action_visualize',
+           'action_webimport', 'actions', 'actions_delete', 'addQuotes',
+           'bcolors', 'del_pickled_ontology', 'do_pickle_ontology', 'entities',
+           'entityComment', 'entityLabel', 'firstEnglishStringInList',
+           'firstStringInList', 'get_files_with_extensions',
+           'get_home_location', 'get_localontologies',
+           'get_or_create_home_repo', 'get_pickled_ontology',
+           'get_random_ontology', 'guess_fileformat', 'inferMainPropertyType',
+           'inferNamespacePrefix', 'inferURILocalSymbol', 'isBlankNode',
+           'is_http', 'joinStringsInList', 'list_chunks', 'manager',
+           'namespaces', 'niceString2uri', 'ontospy', 'playSound',
+           'pprint2columns', 'pprinttable', 'printBasicInfo', 'printDebug',
+           'printGenericTree', 'printInfo', 'rdf_loader', 'remove_duplicates',
+           'rename_pickled_ontology', 'safe_str', 'save_anonymous_gist',
+           'shellPrintOverview', 'slugify', 'sortByNamespacePrefix',
+           'sort_uri_list_by_name', 'sparql_helper', 'split_list', 'test',
+           'truncate', 'try_sort_fmt_opts', 'uri2niceString', 'utils']

@@ -3,7 +3,7 @@
 
 
 import random
-
+import os
 from colorama import Fore
 from colorama import Style
 from configparser import SafeConfigParser
@@ -21,6 +21,13 @@ from . import utils as ut
 
 ONTOSPY_LOCAL, ONTOSPY_LOCAL_CACHE, ONTOSPY_LIBRARY_DEFAULT = None, None, None
 
+from . import ONTOSPY_LOCAL, ONTOSPY_LOCAL_CACHE, ONTOSPY_LIBRARY_DEFAULT, GLOBAL_DISABLE_CACHE, ONTOSPY_LOCAL_CACHE_TOP
+from . import BOOTSTRAP_ONTOLOGIES, BOOTSTRAP_ENDPOINTS
+
+
+#NAMESPACES_DEFAULT
+
+ONTOSPY_LOCAL_MODELS = None
 
 def get_or_create_home_repo(reset=False):
     """
@@ -76,7 +83,6 @@ def get_or_create_home_repo(reset=False):
 
     return True
 
-
 def get_home_location():
     """Gets the path of the local library folder
     :return - a string e.g. "/users/mac/ontospy"
@@ -105,10 +111,10 @@ def get_home_location():
 
         return ONTOSPY_LIBRARY_DEFAULT
 
-
 def get_localontologies(pattern=""):
     "returns a list of file names in the ontologies folder (not the full path)"
     res = []
+    global ONTOSPY_LOCAL_MODELS
     ONTOSPY_LOCAL_MODELS = get_home_location()
     if not os.path.exists(ONTOSPY_LOCAL_MODELS):
         get_or_create_home_repo()

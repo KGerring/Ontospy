@@ -7,7 +7,6 @@ All rights reserved.
 
 """
 
-
 import datetime
 import optparse
 import os

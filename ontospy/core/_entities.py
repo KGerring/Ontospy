@@ -1,19 +1,22 @@
 # !/usr/bin/env python
 #  -*- coding: UTF-8 -*-
 
-from __future__ import print_function
 
-from colorama import Fore, Style
+from itertools import count
 
 import rdflib
-from itertools import count
-# http://stackoverflow.com/questions/8628123/counting-instances-of-a-class
+from colorama import Fore
+from colorama import Style
 
 from . import *
 from .utils import *
 
+# http://stackoverflow.com/questions/8628123/counting-instances-of-a-class
 
-class RdfEntity(object):
+from . import utils as ut
+
+
+class RdfEntity:
     """
     Pythonic representation of an RDF resource - normally not instantiated but used for
     inheritance purposes
@@ -26,21 +29,22 @@ class RdfEntity(object):
       rdflib.term.URIRef(u'http://www.w3.org/2000/01/rdf-schema#subClassOf')]
 
     """
-
+    uri: str
     _ids = count(0)
 
     def __repr__(self):
-        return "<Ontospy: RdfEntity object for uri *%s*>" % (self.uri)
+        return f"<Ontospy: RdfEntity object for uri *{self.uri}*>"
 
-    def __init__(self,
-                 uri,
-                 rdftype=None,
-                 namespaces=None,
-                 ext_model=False,
-                 is_Bnode=False,
-                 pref_title="qname",
-                 pref_lang="en",
-                 ):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        ext_model=False,
+        is_Bnode: bool=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         Init ontology object. Load the graph in memory, then setup all necessary attributes.
 
@@ -51,9 +55,9 @@ class RdfEntity(object):
         """
         self.id = next(self._ids)
 
-        self.uri = uri  # rdflib.Uriref
+        self.uri: rdflib.term.URIRef #Uriref = uri  # rdflib.Uriref
 
-        self.locale = inferURILocalSymbol(self.uri)[0]
+        self.locale = ut.inferURILocalSymbol(self.uri)[0]
         self.ext_model = ext_model
         self.is_Bnode = is_Bnode
         self._pref_title = pref_title
@@ -69,7 +73,7 @@ class RdfEntity(object):
         self.rdftype_qname = self._build_qname(rdftype)
 
         # PS default slug gets overridden later for typed entities
-        self.slug = "entity-" + slugify(self.qname)
+        self.slug = "entity-" + ut.slugify(self.qname)
 
         self._children = []
         self._parents = []
@@ -77,35 +81,35 @@ class RdfEntity(object):
         # self.siblings = []
 
     def rdf_source(self, format="turtle"):
-        """ xml, n3, turtle, nt, pretty-xml, trix are built in"""
+        """xml, n3, turtle, nt, pretty-xml, trix are built in"""
         if self.triples:
             if not self.rdflib_graph:
                 self._buildGraph()
             s = self.rdflib_graph.serialize(format=format)
             if isinstance(s, bytes):
-                s = s.decode('utf-8')
+                s = s.decode("utf-8")
             return s
         else:
             return None
 
     def printSerialize(self, format="turtle"):
-        printInfo("\n" + self.rdf_source(format))
+        ut.printInfo("\n" + self.rdf_source(format))
 
     def printTriples(self):
-        """ display triples """
-        printInfo(Fore.RED + self.uri + Style.RESET_ALL)
+        """display triples"""
+        ut.printInfo(Fore.RED + self.uri + Style.RESET_ALL)
         for x in self.triples:
-            printInfo(Fore.BLACK + "=> " + unicode(x[1]))
-            printInfo(Style.DIM + ".... " + unicode(x[2]) + Fore.RESET)
-        printInfo("")
+            ut.printInfo(Fore.BLACK + "=> " + str(x[1]))
+            ut.printInfo(Style.DIM + ".... " + str(x[2]) + Fore.RESET)
+        ut.printInfo("")
 
     def _build_qname(self, uri=None, namespaces=None):
-        """ extracts a qualified name for a uri """
+        """extracts a qualified name for a uri"""
         if not uri:
             uri = self.uri
         if not namespaces:
             namespaces = self.namespaces
-        return uri2niceString(uri, namespaces)
+        return ut.uri2niceString(uri, namespaces)
 
     def _buildGraph(self):
         """
@@ -121,7 +125,7 @@ class RdfEntity(object):
     # methods added to RdfEntity even though they apply only to some subs
 
     def ancestors(self, cl=None, noduplicates=True):
-        """ returns all ancestors in the taxonomy """
+        """returns all ancestors in the taxonomy"""
         if not cl:
             cl = self
         if cl.parents():
@@ -140,7 +144,7 @@ class RdfEntity(object):
             return []
 
     def descendants(self, cl=None, noduplicates=True):
-        """ returns all descendants in the taxonomy """
+        """returns all descendants in the taxonomy"""
         if not cl:
             cl = self
         if cl.children():
@@ -196,17 +200,17 @@ class RdfEntity(object):
             prefLanguage = self._pref_lang
 
         if test:
-            out = firstStringInList(test, prefLanguage)
+            out = ut.firstStringInList(test, prefLanguage)
         else:
             test = self.getValuesForProperty(rdflib.namespace.SKOS.prefLabel)
             if test:
-                out = firstStringInList(test, prefLanguage)
+                out = ut.firstStringInList(test, prefLanguage)
             else:
                 if qname_allowed:
                     out = self.locale
 
         if quotes and out:
-            return addQuotes(out)
+            return ut.addQuotes(out)
         else:
             return out
 
@@ -216,8 +220,10 @@ class RdfEntity(object):
         """
 
         test_preds = [
-            rdflib.RDFS.comment, rdflib.namespace.DCTERMS.description,
-            rdflib.namespace.DC.description, rdflib.namespace.SKOS.definition
+            rdflib.RDFS.comment,
+            rdflib.namespace.DCTERMS.description,
+            rdflib.namespace.DC.description,
+            rdflib.namespace.SKOS.definition,
         ]
 
         if not prefLanguage:
@@ -228,17 +234,17 @@ class RdfEntity(object):
             # printInfo(str(test), "red")
             if test:
                 if quotes:
-                    return addQuotes(joinStringsInList(test, prefLanguage))
+                    return ut.addQuotes(ut.joinStringsInList(test, prefLanguage))
                 else:
-                    return joinStringsInList(test, prefLanguage)
+                    return ut.joinStringsInList(test, prefLanguage)
         return ""
 
     @property
     def title(self):
         """Entity title - used for display purposes only.
-        Can be set by user once ontospy is created. 
+        Can be set by user once ontospy is created.
         Values allowed: 'qname' or 'label'
-        
+
         Defaults to 'qname'.
         """
 
@@ -246,11 +252,10 @@ class RdfEntity(object):
             out = self.qname
         elif self._pref_title == "label":
             out = self.bestLabel()
-        else: 
+        else:
             return self.qname
 
         return out
-
 
 
 class Ontology(RdfEntity):
@@ -261,22 +266,30 @@ class Ontology(RdfEntity):
     def __repr__(self):
         return "<Ontospy: Ontology object for uri *%s*>" % (self.uri)
 
-    def __init__(self,
-                 uri,
-                 rdftype=None,
-                 namespaces=None,
-                 pref_prefix="",
-                 ext_model=False,
-                 pref_title="qname",
-                 pref_lang="en",
-                 ):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        pref_prefix="",
+        ext_model=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         Init ontology object. Load the graph in memory, then setup all necessary attributes.
         """
-        super().__init__(uri, rdftype, namespaces, ext_model, pref_title=pref_title, pref_lang=pref_lang)
+        super().__init__(
+            uri,
+            rdftype,
+            namespaces,
+            ext_model,
+            pref_title=pref_title,
+            pref_lang=pref_lang,
+        )
         # self.uri = uri # rdflib.Uriref
         self.prefix = pref_prefix
-        self.slug = "ontology-" + slugify(self.qname)
+        self.slug = "ontology-" + ut.slugify(self.qname)
         self.all_classes = []
         self.all_properties = []
         self.all_skos_concepts = []
@@ -287,23 +300,28 @@ class Ontology(RdfEntity):
         By default resources URIs are transformed into qnames
         """
         if qname:
-            return sorted([(uri2niceString(x, self.namespaces)
-                            ), (uri2niceString(y, self.namespaces)), z]
-                          for x, y, z in self.triples)
+            return sorted(
+                [
+                    (ut.uri2niceString(x, self.namespaces)),
+                    (ut.uri2niceString(y, self.namespaces)),
+                    z,
+                ]
+                for x, y, z in self.triples
+            )
         else:
             return sorted(self.triples)
 
     def describe(self):
-        """ shotcut to pull out useful info for interactive use """
+        """shotcut to pull out useful info for interactive use"""
         # self.printGenericTree()
         # self.printTriples()
-        printInfo(self.uri, "green")
+        ut.printInfo(self.uri, "green")
         self.stats()
 
     def stats(self):
-        """ shotcut to pull out useful info for interactive use """
-        printInfo("Classes.....: %d" % len(self.all_classes))
-        printInfo("Properties..: %d" % len(self.all_properties))
+        """shotcut to pull out useful info for interactive use"""
+        ut.printInfo("Classes.....: %d" % len(self.all_classes))
+        ut.printInfo("Properties..: %d" % len(self.all_properties))
 
 
 class OntoClass(RdfEntity):
@@ -321,13 +339,26 @@ class OntoClass(RdfEntity):
             ]
     """
 
-    def __init__(self, uri, rdftype=None, namespaces=None, 
-                ext_model=False, pref_title="qname", pref_lang="en"):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        ext_model=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         ...
         """
-        super().__init__(uri, rdftype, namespaces, ext_model, 
-                pref_title=pref_title, pref_lang=pref_lang)
+        super().__init__(
+            uri,
+            rdftype,
+            namespaces,
+            ext_model,
+            pref_title=pref_title,
+            pref_lang=pref_lang,
+        )
         self.slug = "class-" + slugify(self.qname)
         self.domain_of = []
         self.range_of = []
@@ -336,11 +367,10 @@ class OntoClass(RdfEntity):
         self.ontology = None
         self._instances = False  # calc on demand at runtime
         self.sparqlHelper = None  # the original graph the class derives from
-        self.shapedProperties = [
-        ]  #properties of this class that belong to a shape
+        self.shapedProperties = []  # properties of this class that belong to a shape
 
     def __repr__(self):
-        return "<Class *%s*>" % (self.uri)
+        return f"<Class *{self.uri}*>"
 
     @property
     def instances(self):  # = all instances
@@ -352,24 +382,24 @@ class OntoClass(RdfEntity):
         return len(self.instances)
 
     def printStats(self):
-        """ shortcut to pull out useful info for interactive use """
-        printInfo("----------------")
-        printInfo("Parents......: %d" % len(self.parents()))
-        printInfo("Children.....: %d" % len(self.children()))
-        printInfo("Ancestors....: %d" % len(self.ancestors()))
-        printInfo("Descendants..: %d" % len(self.descendants()))
-        printInfo("Domain of....: %d" % len(self.domain_of))
-        printInfo("Range of.....: %d" % len(self.range_of))
-        printInfo("Instances....: %d" % self.count())
-        printInfo("----------------")
+        """shortcut to pull out useful info for interactive use"""
+        ut.printInfo("----------------")
+        ut.printInfo("Parents......: %d" % len(self.parents()))
+        ut.printInfo("Children.....: %d" % len(self.children()))
+        ut.printInfo("Ancestors....: %d" % len(self.ancestors()))
+        ut.printInfo("Descendants..: %d" % len(self.descendants()))
+        ut.printInfo("Domain of....: %d" % len(self.domain_of))
+        ut.printInfo("Range of.....: %d" % len(self.range_of))
+        ut.printInfo("Instances....: %d" % self.count())
+        ut.printInfo("----------------")
 
     def printGenericTree(self):
-        printGenericTree(self)
+        ut.printGenericTree(self)
 
     def describe(self):
-        """ shotcut to pull out useful info for interactive use """
+        """shotcut to pull out useful info for interactive use"""
         # self.printTriples()
-        printInfo(self.uri, "green")
+        ut.printInfo(self.uri, "green")
         self.printStats()
         # self.printGenericTree()
 
@@ -386,41 +416,55 @@ class OntoProperty(RdfEntity):
 
     """
 
-    def __init__(self, uri, rdftype=None, namespaces=None, ext_model=False, 
-            pref_title="qname", pref_lang="en"):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        ext_model=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         ...
         """
-        super().__init__(uri, rdftype, namespaces, ext_model, pref_title=pref_title, pref_lang=pref_lang)
+        super().__init__(
+            uri,
+            rdftype,
+            namespaces,
+            ext_model,
+            pref_title=pref_title,
+            pref_lang=pref_lang,
+        )
 
-        self.slug = "prop-" + slugify(self.qname)
-        self.rdftype = inferMainPropertyType(rdftype)
+        self.slug = "prop-" + ut.slugify(self.qname)
+        self.rdftype = ut.inferMainPropertyType(rdftype)
 
         self.domains = []
         self.ranges = []
         self.ontology = None
 
     def __repr__(self):
-        return "<Property *%s*>" % (self.uri)
+        return f"<Property *{self.uri}*>"
 
     def printGenericTree(self):
-        printGenericTree(self)
+        ut.printGenericTree(self)
 
     def printStats(self):
-        """ shotcut to pull out useful info for interactive use """
-        printInfo("----------------")
-        printInfo("Parents......: %d" % len(self.parents()))
-        printInfo("Children.....: %d" % len(self.children()))
-        printInfo("Ancestors....: %d" % len(self.ancestors()))
-        printInfo("Descendants..: %d" % len(self.descendants()))
-        printInfo("Has Domain...: %d" % len(self.domains))
-        printInfo("Has Range....: %d" % len(self.ranges))
-        printInfo("----------------")
+        """shotcut to pull out useful info for interactive use"""
+        ut.printInfo("----------------")
+        ut.printInfo("Parents......: %d" % len(self.parents()))
+        ut.printInfo("Children.....: %d" % len(self.children()))
+        ut.printInfo("Ancestors....: %d" % len(self.ancestors()))
+        ut.printInfo("Descendants..: %d" % len(self.descendants()))
+        ut.printInfo("Has Domain...: %d" % len(self.domains))
+        ut.printInfo("Has Range....: %d" % len(self.ranges))
+        ut.printInfo("----------------")
 
     def describe(self):
-        """ shotcut to pull out useful info for interactive use """
+        """shotcut to pull out useful info for interactive use"""
         # self.printTriples()
-        printInfo(self.uri, "green")
+        ut.printInfo(self.uri, "green")
         self.printStats()
         # self.printGenericTree()
 
@@ -432,13 +476,27 @@ class OntoSKOSConcept(RdfEntity):
 
     """
 
-    def __init__(self, uri, rdftype=None, namespaces=None, ext_model=False, pref_title="qname", pref_lang="en"):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        ext_model=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         ...
         """
-        super().__init__(uri, rdftype, namespaces,
-                                              ext_model, pref_title=pref_title, pref_lang=pref_lang)
-        self.slug = "concept-" + slugify(self.qname)
+        super().__init__(
+            uri,
+            rdftype,
+            namespaces,
+            ext_model,
+            pref_title=pref_title,
+            pref_lang=pref_lang,
+        )
+        self.slug = "concept-" + ut.slugify(self.qname)
         self.instance_of = []
         self.ontology = None
         self.sparqlHelper = None  # the original graph the class derives from
@@ -447,21 +505,21 @@ class OntoSKOSConcept(RdfEntity):
         return "<SKOS Concept *%s*>" % (self.uri)
 
     def printStats(self):
-        """ shotcut to pull out useful info for interactive use """
-        printInfo("----------------")
-        printInfo("Parents......: %d" % len(self.parents()))
-        printInfo("Children.....: %d" % len(self.children()))
-        printInfo("Ancestors....: %d" % len(self.ancestors()))
-        printInfo("Descendants..: %d" % len(self.descendants()))
-        printInfo("----------------")
+        """shotcut to pull out useful info for interactive use"""
+        ut.printInfo("----------------")
+        ut.printInfo("Parents......: %d" % len(self.parents()))
+        ut.printInfo("Children.....: %d" % len(self.children()))
+        ut.printInfo("Ancestors....: %d" % len(self.ancestors()))
+        ut.printInfo("Descendants..: %d" % len(self.descendants()))
+        ut.printInfo("----------------")
 
     def printGenericTree(self):
-        printGenericTree(self)
+        ut.printGenericTree(self)
 
     def describe(self):
-        """ shotcut to pull out useful info for interactive use """
+        """shotcut to pull out useful info for interactive use"""
         # self.printTriples()
-        printInfo(self.uri, "green")
+        ut.printInfo(self.uri, "green")
         self.printStats()
         self.printGenericTree()
 
@@ -472,12 +530,27 @@ class OntoShape(RdfEntity):
 
     """
 
-    def __init__(self, uri, rdftype=None, namespaces=None, ext_model=False, pref_title="qname", pref_lang="en"):
+    def __init__(
+        self,
+        uri,
+        rdftype=None,
+        namespaces=None,
+        ext_model=False,
+        pref_title="qname",
+        pref_lang="en",
+    ):
         """
         ...
         """
-        super().__init__(uri, rdftype, namespaces, ext_model, pref_title=pref_title, pref_lang=pref_lang)
-        self.slug = "shape-" + slugify(self.qname)
+        super().__init__(
+            uri,
+            rdftype,
+            namespaces,
+            ext_model,
+            pref_title=pref_title,
+            pref_lang=pref_lang,
+        )
+        self.slug = "shape-" + ut.slugify(self.qname)
         self.ontology = None
         self.targetClasses = []
         self.sparqlHelper = None  # the original graph the class derives from
@@ -486,15 +559,23 @@ class OntoShape(RdfEntity):
         return "<SHACL shape *%s*>" % (self.uri)
 
     def printStats(self):
-        """ shotcut to pull out useful info for interactive use """
-        printInfo("----------------")
-        printInfo("Parents......: %d" % len(self.parents()))
-        printInfo("Children.....: %d" % len(self.children()))
-        printInfo("Ancestors....: %d" % len(self.ancestors()))
-        printInfo("Descendants..: %d" % len(self.descendants()))
-        printInfo("----------------")
+        """shotcut to pull out useful info for interactive use"""
+        ut.printInfo("----------------")
+        ut.printInfo("Parents......: %d" % len(self.parents()))
+        ut.printInfo("Children.....: %d" % len(self.children()))
+        ut.printInfo("Ancestors....: %d" % len(self.ancestors()))
+        ut.printInfo("Descendants..: %d" % len(self.descendants()))
+        ut.printInfo("----------------")
 
     def describe(self):
-        """ shotcut to pull out useful info for interactive use """
+        """shotcut to pull out useful info for interactive use"""
         # self.printTriples()
         self.printStats()
+
+
+__all__ = sorted(['OntoShape',
+                  'OntoSKOSConcept',
+                  'OntoProperty',
+                  'OntoClass',
+                  'Ontology',
+                  'RdfEntity'])

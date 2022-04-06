@@ -98,8 +98,7 @@ class Ontospy:
                 Default: 'en'
         """
 
-        super(Ontospy, self).__init__()
-
+        super().__init__()
         self.rdflib_graph = None
         self.sparql_endpoint = None
         self.credentials = None  # tuple: auth credentials for endpoint if needed
