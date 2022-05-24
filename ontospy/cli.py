@@ -544,7 +544,7 @@ def shell(sources=None):
 ##
 ## SERIALIZE COMMAND
 ##
-
+#/Users/kristen/_tmp/Ontospy/ontospy/cli.py
 
 @main_cli.command()
 @click.argument("source", nargs=-1)

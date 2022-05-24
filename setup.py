@@ -17,12 +17,9 @@ if mo:
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
-
-
 # Get the long description from the README file
 with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-
 
 # Parse requirements.txt file so to have one single source of truth
 REQUIREMENTS_DATA = []
@@ -61,7 +58,6 @@ def get_package_folders(top_folder, root_path):
 PROJECT_ROOT = os.path.join(HERE, "ontospy") # should be top level always
 DATA_STATIC_FILES = os.path.join(PROJECT_ROOT, "ontodocs", "media", "static")
 DATA_TEMPLATE_FILES = os.path.join(PROJECT_ROOT, "ontodocs", "media", "templates")
-
 # dynamically generate list of data folders
 PACKAGE_DATA_FOLDERS = get_package_folders(
     DATA_STATIC_FILES, PROJECT_ROOT) + get_package_folders(
@@ -79,9 +75,9 @@ setup(
     'Query, inspect and visualize knowledge models encoded as RDF&OWL ontologies.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/lambdamusic/ontospy',
-    author='Michele Pasin',
-    author_email='michele.pasin@gmail.com',
+    url='https://github.com/KGerring/ontospy',
+    author='KGerring',
+    author_email='KGerring@gmail.com',
     license='MIT',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

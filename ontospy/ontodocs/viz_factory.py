@@ -262,3 +262,4 @@ class VizFactory:
         except Exception as e:
             printDebug("Error: Pygmentize Failed", "red")
             return {}
+

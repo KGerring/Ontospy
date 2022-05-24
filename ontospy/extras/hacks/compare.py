@@ -115,6 +115,8 @@ def parse_options():
         raise SystemExit(1)
 
     return opts, args
+
+    
 def main():
     # get parameters
     opts, args = parse_options()

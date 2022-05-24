@@ -30,7 +30,6 @@
 
 
 import math
-import optparse
 import sys
 import time
 import xml.dom.minidom
@@ -208,6 +207,7 @@ class SparqlEndpoint:
 
         return results
 
+import optparse, argparse, click
 
 def parse_options():
     """
@@ -277,6 +277,77 @@ def parse_options():
     return opts, args
 
 
+@click.command('sparql')
+@click.option('-q', '--query', default = '', help="SPARQL query string")
+@click.option('-f', '--format', default = 'JSON', help="Results format: one of JSON, XML",)
+@click.option('-d', "--describe", default="", help="Describe Query: just pass a URI")
+@click.option('-a', '--alltriples', default = '', help="Get all available triples for a URI")
+@click.option("-o", "--ontology", is_flag = True, help="Get all entities of type owl:Class - aka the ontology")
+@click.pass_context
+def main(ctx, query= '', format = 'JSON', describe"", alltriples = '', ontology = False):
+    '''prog [options] <sparql endpoint url>'''
+    url = query
+    sTime = time.time()
+    s = SparqlEndpoint(url)
+
+    if query:
+        click.echo((f'Contacting {url} ... \nQuery: "{query}"; Format: {format}\n'))
+        results = s.query(query, format)
+    elif describe:
+        click.echo(
+            (
+                "Contacting %s ... \nQuery: DESCRIBE %s; Format: %s\n"
+                % (url, describe, format)
+            )
+        )
+        results = s.describe(describe, format)
+    elif alltriples:
+        print(
+            (
+                "Contacting %s ... \nQuery: ALL TRIPLES FOR %s; Format: %s\n"
+                % (url, alltriples, format)
+            )
+        )
+        results = s.allTriplesForURI(alltriples, format)
+    elif ontology:
+        print((f"Contacting {url} ... \nQuery: ONTOLOGY; Format: {format}\n"))
+        results = s.ontology(format)
+
+    if format == "JSON":
+        results = results["results"]["bindings"]
+        for d in results:
+            for k, v in list(d.items()):
+                print((f"[{k}] {v['type']}=> {v['value']}"))
+            print("----")
+    elif format == "XML":
+        print((results.toxml()))
+    else:
+        click.echo(results)
+
+    # print some stats....
+    eTime = time.time()
+    tTime = eTime - sTime
+    print(("-" * 10))
+    print(("Time:      %0.2fs" % tTime))
+
+    try:
+        # most prob this works only with JSON results, but you get the idea!
+        print((f"Found:    {len(results):d}"))
+        print(
+            (
+                "Stats:    (%d/s after %0.2fs)"
+                % (int(math.ceil(float(len(results)) / tTime)), tTime)
+            )
+        )
+    except:
+        pass
+
+
+
+
+
+
+
 def main():
     # get parameters
     opts, args = parse_options()
@@ -344,6 +415,8 @@ def main():
         )
     except:
         pass
+
+
 
 
 if __name__ == "__main__":

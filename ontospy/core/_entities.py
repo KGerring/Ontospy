@@ -60,8 +60,8 @@ class RdfEntity:
         self.locale = ut.inferURILocalSymbol(self.uri)[0]
         self.ext_model = ext_model
         self.is_Bnode = is_Bnode
-        self._pref_title = pref_title
-        self._pref_lang = pref_lang
+        self._pref_title: str = pref_title
+        self._pref_lang: str = pref_lang
 
         self.rdftype = rdftype
         self.triples = None

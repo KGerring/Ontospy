@@ -49,7 +49,7 @@ class DBpediaEndpoint(SparqlEndpoint):
             "yago": "http://dbpedia.org/class/yago/",
         }
 
-        super(DBpediaEndpoint, self).__init__(endpoint, prefixes, verbose=True)
+        super().__init__(endpoint, prefixes, verbose=True)
 
 
 def parse_options():
@@ -122,17 +122,17 @@ def parse_options():
     return opts, args
 
 
-def main():
+import click
+@click.command('sparql')
+@click.option('-q', '--query', default = '', help="SPARQL query string")
+@click.option('-f', '--format', default = 'JSON', help="Results format: one of JSON, XML",)
+@click.option('-d', "--describe", default="", help="Describe Query: just pass a URI")
+@click.option('-a', '--alltriples', default = '', help="Get all available triples for a URI")
+@click.option("-o", "--ontology", is_flag = True, help="Get all entities of type owl:Class - aka the ontology")
+@click.pass_context
+def main(ctx, query= '', format = 'JSON', describe"", alltriples = '', ontology = False):
     # get parameters
     opts, args = parse_options()
-    query, format, describe, alltriples, ontology = (
-        opts.query,
-        opts.format,
-        opts.describe,
-        opts.alltriples,
-        opts.ontology,
-    )
-
     sTime = time.time()
 
     s = DBpediaEndpoint()

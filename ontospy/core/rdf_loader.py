@@ -45,7 +45,7 @@ class RDFLoader:
     @TODO: refactor so that verbose is always taken from INIT method
 
     """
-
+    rdflib_graph: rdflib.Graph
     SERIALIZATIONS = [
         "xml",
         "n3",
@@ -54,9 +54,9 @@ class RDFLoader:
         "turtle",
         "rdfa",
     ]
-
+    verbose: bool
     def __init__(self, rdfgraph=None, verbose=False):
-        super(RDFLoader, self).__init__()
+        super().__init__()
 
         self.rdflib_graph = rdfgraph or rdflib.Graph()
         self.sources_valid = []
@@ -130,7 +130,9 @@ class RDFLoader:
     def load_uri(self, uri):
         """Load a single resource into the graph for this object.
 
-        Approach: try loading into a temporary graph first, if that succeeds merge it into the main graph. This allows to deal with the JSONLD loading issues which can solved only by using a  ConjunctiveGraph (https://github.com/RDFLib/rdflib/issues/436). Also it deals with the RDFA error message which seems to stick into a graph even if the parse operation fails.
+        Approach: try loading into a temporary graph first, if that succeeds merge it into the main graph.
+        This allows to deal with the JSONLD loading issues which can solved only by using a  ConjunctiveGraph (https://github.com/RDFLib/rdflib/issues/436). 
+        Also it deals with the RDFA error message which seems to stick into a graph even if the parse operation fails.
 
         TODO the final merge operation can be improved as graph-set operations involving blank nodes could case collisions (https://rdflib.readthedocs.io/en/stable/merging.html)
 
@@ -140,7 +142,7 @@ class RDFLoader:
 
         # if self.verbose: ut.printDebug("----------")
         if self.verbose:
-            ut.printDebug("Reading: <%s>" % uri, fg="green")
+            ut.printDebug(f"Reading: <{uri}>" fg="green")
         success = False
 
         sorted_fmt_opts = ut.try_sort_fmt_opts(self.rdf_format_opts, uri)

@@ -12,7 +12,7 @@
 - [Miscellaneous Tips](#miscellaneous-tips)
 - [Quick Links](#quick-links)
 
-## Welcome to Ontospy's Documentation!
+## Welcome to Ontospy's Documentation! #
 
 Ontospy is a lightweight Python library and command line tool for 
 working with vocabularies encoded in the 

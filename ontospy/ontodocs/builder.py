@@ -90,7 +90,7 @@ except:  # Mother of all exceptions
 
 def show_types():
     for n, t in enumerate(VISUALIZATIONS_LIST):
-        printInfo("%d. %s" % (n + 1, t["Title"]), "green")
+        printInfo(f"{n + 1:d}. {t['Title']}", "green")
     printInfo("Note: select a viz type by using its numerical index.", "comment")
 
 
@@ -125,7 +125,7 @@ def ask_visualization():
     while True:
         text = ""
         for viz in VISUALIZATIONS_LIST:
-            text += "%d) %s\n" % (VISUALIZATIONS_LIST.index(viz) + 1, viz["Title"])
+            text += f"{VISUALIZATIONS_LIST.index(viz) + 1:d}) {viz['Title']}\n"
         var = eval(input(text + ">"))
         if var == "q":
             return ""
@@ -158,12 +158,12 @@ def select_visualization(n):
 # ===========
 
 
-def build_visualization(ontouri, g, viz_index, path=None, title="", theme=""):
+def build_visualization(ontouri, g, viz_index: int, path=None, title="", theme=""):
     """
     2017-01-20: new verion, less clever but also simpler
 
     :param g:
-    :param viz_index:
+    :param int viz_index:
     :param main_entity:
     :return:
     """
@@ -237,10 +237,8 @@ def saveVizGithub(contents, ontouri):
     Was working but had a dependecies on package 'uritemplate.py' which caused problems at installation time
     """
     title = "Ontospy: ontology export"
-    readme = """This ontology documentation was automatically generated with Ontospy (https://github.com/lambdamusic/Ontospy).
-	The graph URI is: %s""" % str(
-        ontouri
-    )
+    readme = f"""This ontology documentation was automatically generated with Ontospy (https://github.com/lambdamusic/Ontospy).
+	The graph URI is: {str(ontouri)}"""
     files = {
         "index.html": {"content": contents},
         "README.txt": {"content": readme},

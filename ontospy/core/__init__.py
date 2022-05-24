@@ -87,7 +87,7 @@ import rdflib.namespace, rdflib.extras, rdflib.plugins, rdflib.tools
 from ontospy.core import actions
 from ontospy.core import entities
 from ontospy.core import manager
-from ontospy.core import namespaces
+#from ontospy.core import namespaces
 from ontospy.core import ontospy
 from ontospy.core import rdf_loader
 from ontospy.core import sparql_helper

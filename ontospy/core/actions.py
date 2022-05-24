@@ -27,10 +27,10 @@ from .manager import *
 from .manager import get_localontologies, get_home_location, get_or_create_home_repo
 from .ontospy import Ontospy
 from .utils import *
-from .utils import printDebug, printInfo
+from .utils import printDebug, printInfo, shellPrintOverview, pprint2columns
 
 
-
+import click
 try:
     import pickle
 except ImportError:
@@ -79,10 +79,10 @@ def action_analyze(
     """
     Load up a model into ontospy and analyze it
     """
-    ut.printDebug("Parsing ...", fg="white")
+    printDebug("Parsing ...", fg="white")
     for x in sources:
-        ut.printInfo(f"# {str(x)}", fg="white")
-    ut.printInfo("")
+        printInfo(f"# {str(x)}", fg="white")
+    printInfo("")
 
     if extra:
         hide_base_schemas = False
@@ -103,7 +103,7 @@ def action_analyze(
             uri_or_path=sources, verbose=verbose, rdf_format=format, build_all=False
         )
         s = o.serialize()
-        ut.printInfo(s)
+        printInfo(s)
         return
     elif endpoint:
         g = Ontospy(
@@ -115,18 +115,18 @@ def action_analyze(
             hide_implicit_preds=hide_implicit_preds,
             hide_individuals=hide_individuals,
         )
-        ut.printDebug("Extracting classes info")
+        printDebug("Extracting classes info")
         g.build_classes()
-        ut.printDebug("..done")
-        ut.printDebug("Extracting properties info")
+        printDebug("..done")
+        printDebug("Extracting properties info")
         g.build_properties()
-        ut.printDebug("..done")
+        printDebug("..done")
         if not hide_individuals:
-            ut.printDebug(
+            printDebug(
                 "Extracting individuals info (WARNING - on Sparql endpoints this could lead to very long performance times"
             )
             g.build_individuals()
-            ut.printDebug("..done")
+            printDebug("..done")
     else:
         g = Ontospy(
             uri_or_path=sources,
@@ -139,7 +139,7 @@ def action_analyze(
         )
 
     if len(g.rdflib_graph):
-        ut.shellPrintOverview(g, print_opts)
+        shellPrintOverview(g, print_opts)
 
 
 def action_reveal_library():
@@ -160,7 +160,7 @@ def action_serialize(source, out_fmt="turtle", verbose=False):
 
     o = Ontospy(uri_or_path=source, verbose=verbose, build_all=False)
     s = o.serialize(out_fmt)
-    ut.printInfo(s)
+    printInfo(s)
 
 
 def action_jsonld_playground(source_path, verbose=False):
@@ -172,12 +172,12 @@ def action_jsonld_playground(source_path, verbose=False):
     BASE_URL = "https://json-ld.org/playground/#startTab=tab-expanded&json-ld="
     my_file_handle = None
 
-    ut.printDebug(f"Preparing... : {str(source_path)}", "comment")
+    printDebug(f"Preparing... : {str(source_path)}", "comment")
 
     try:
         my_file_handle = open(source_path)
     except IOError:
-        ut.printDebug(
+        printDebug(
             "------------------\nFile not found or path is incorrect", "important"
         )
 
@@ -192,9 +192,9 @@ def action_listlocal(all_details=True):
     options = get_localontologies()
 
     counter = 1
-    # ut.printDebug("------------------", 'comment')
+    # printDebug("------------------", 'comment')
     if not options:
-        ut.printDebug(
+        printDebug(
             "Your local library is empty. Use 'ontospy lib --bootstrap' to add some ontologies to it."
         )
         return
@@ -205,7 +205,7 @@ def action_listlocal(all_details=True):
             _print2cols_ontologies()
 
         while True:
-            ut.printDebug(
+            printDebug(
                 "------------------\nSelect a model by typing its number: (enter=quit)",
                 "important",
             )
@@ -216,13 +216,13 @@ def action_listlocal(all_details=True):
                 try:
                     _id = int(var)
                     ontouri = options[_id - 1]
-                    # ut.printDebug("\nYou selected:", "comment")
-                    ut.printDebug(
+                    # printDebug("\nYou selected:", "comment")
+                    printDebug(
                         "---------\nYou selected: " + ontouri + "\n---------", "green"
                     )
                     return ontouri
                 except:
-                    ut.printDebug("Please enter a valid option.", "comment")
+                    printDebug("Please enter a valid option.", "comment")
                     continue
 
 
@@ -230,13 +230,13 @@ def _print2cols_ontologies():
     ontologies = get_localontologies()
 
     if ontologies:
-        ut.printDebug("------------", "tip")
+        printDebug("------------", "tip")
         counter = 0
         out = []
         for x in ontologies:
             counter += 1
             out += [f"[{str(counter)}] {x}"]
-        ut.pprint2columns(out, max_length=60)
+        pprint2columns(out, max_length=60)
 
 
 def _print_table_ontologies():
@@ -245,11 +245,12 @@ def _print_table_ontologies():
     2015-10-18: removed 'cached' from report
     2016-06-17: made a subroutine of action_listlocal()
     """
+    import click
     ontologies = get_localontologies()
     ONTOSPY_LOCAL_MODELS = get_home_location()
 
     if ontologies:
-        ut.printDebug("")
+        printDebug("")
         temp = []
         from collections import namedtuple
 
@@ -270,7 +271,7 @@ def _print_table_ontologies():
             # cached = str(os.path.exists(ONTOSPY_LOCAL_CACHE + "/" + file + ".pickle"))
             temp += [Row(_counter, last_modified_date, name)]
         ut.pprinttable(temp)
-        ut.printDebug("")
+        printDebug("")
     return
 
 
@@ -300,7 +301,7 @@ def action_import(location: str, verbose=True):
                 req = urllib.request.Request(location, headers=headers)
                 res = urlopen(req)
             final_location = res.geturl()  # after 303 redirects
-            ut.printDebug(f"Saving data from <{final_location}>", "green")
+            printDebug(f"Saving data from <{final_location}>", "green")
             # filename = final_location.split("/")[-1] or final_location.split("/")[-2]
             filename = location.replace("http://", "").replace("/", "_")
             if not filename.lower().endswith((".rdf", ".owl", ".rdfs", ".ttl", ".n3")):
@@ -321,9 +322,8 @@ def action_import(location: str, verbose=True):
             else:
                 raise ValueError("The location specified is not a file.")
     except:
-        ut.printDebug(
-            "Error retrieving file. Please make sure <%s> is a valid location."
-            % location,
+        printDebug(
+                f"Error retrieving file. Please make sure <{location}> is a valid location.",
             "important",
         )
         if os.path.exists(fullpath):
@@ -332,24 +332,23 @@ def action_import(location: str, verbose=True):
 
     try:
         g = Ontospy(fullpath, verbose=verbose)
-        # ut.printDebug("----------")
+        # printDebug("----------")
     except:
         g = None
         if os.path.exists(fullpath):
             os.remove(fullpath)
-        ut.printDebug(
-            "Error parsing file. Please make sure %s contains valid RDF." % location,
+        printDebug(
+                f"Error parsing file. Please make sure {location} contains valid RDF.",
             "important",
         )
 
     if g:
-        ut.printDebug("Caching...", "red")
+        printDebug("Caching...", "red")
         do_pickle_ontology(filename, g)
-        ut.printDebug("----------\n...completed!", "important")
+        printDebug("----------\n...completed!", "important")
 
     # finally...
     return g
-
 
 
 def action_import_folder(location):
@@ -362,10 +361,10 @@ def action_import_folder(location):
         for file in onlyfiles:
             if not file.startswith("."):
                 filepath = os.path.join(location, file)
-                ut.printDebug("\n---------\n" + filepath + "\n---------", fg="red")
+                printDebug("\n---------\n" + filepath + "\n---------", fg="red")
                 return action_import(filepath)
     else:
-        ut.printDebug("Not a valid directory", "important")
+        printDebug("Not a valid directory", "important")
         return None
 
 
@@ -375,7 +374,7 @@ def action_webimport(hrlinetop=False):
     selection = None
     while True:
         if hrlinetop:
-            ut.printDebug("----------")
+            printDebug("----------")
         text = "Please select which online directory to scan: (enter=quit)\n"
         for x in DIR_OPTIONS:
             text += f"{x:d}) {DIR_OPTIONS[x]}\n"
@@ -388,10 +387,10 @@ def action_webimport(hrlinetop=False):
                 test = DIR_OPTIONS[selection]  # throw exception if number wrong
                 break
             except:
-                ut.printDebug("Invalid selection. Please try again.", "important")
+                printDebug("Invalid selection. Please try again.", "important")
                 continue
 
-    ut.printDebug("----------")
+    printDebug("----------")
     text = "Search for a specific keyword? (enter=show all)\n"
     var = eval(input(text + "> "))
     keyword = var
@@ -402,7 +401,7 @@ def action_webimport(hrlinetop=False):
         elif selection == 2:
             _import_PREFIXCC(keyword=keyword)
     except:
-        ut.printDebug("Sorry, the online repository seems to be unreachable.")
+        printDebug("Sorry, the online repository seems to be unreachable.")
 
     return True
 
@@ -414,7 +413,7 @@ def _import_LOV(
     2016-03-02: import from json list
     """
 
-    ut.printDebug(f"----------\nReading source... <{baseuri}>")
+    printDebug(f"----------\nReading source... <{baseuri}>")
     query = requests.get(baseuri, params={})
     all_options = query.json()
     options = []
@@ -431,7 +430,7 @@ def _import_LOV(
     else:
         options = all_options
 
-    ut.printDebug("----------\n%d results found.\n----------" % len(options))
+    printDebug("----------\n%d results found.\n----------" % len(options))
 
     if options:
         # display:
@@ -439,7 +438,7 @@ def _import_LOV(
         for x in options:
             uri, title, ns = x["uri"], x["titles"][0]["value"], x["nsp"]
             # print("%s ==> %s" % (d['titles'][0]['value'], d['uri']))
-            ut.printDebug(
+            printDebug(
                 click.style(f"[{counter:d}]", fg="blue")
                 + click.style(uri + " ==> ", fg="black")
                 + click.style(title, fg="red"),
@@ -462,7 +461,7 @@ def _import_LOV(
                 try:
                     _id = int(var)
                     ontouri = options[_id - 1]["uri"]
-                    ut.printDebug(
+                    printDebug(
                         Fore.RED
                         + "\n---------\n"
                         + ontouri
@@ -476,7 +475,7 @@ def _import_LOV(
                         action_import(ontouri)
                     return
                 except:
-                    ut.printDebug("Error retrieving file. Import failed.")
+                    printDebug("Error retrieving file. Import failed.")
                     continue
 
 
@@ -491,7 +490,7 @@ def _import_PREFIXCC(keyword=""):
     SOURCE = "http://prefix.cc/popular/all.file.vann"
     options = []
 
-    ut.printDebug("----------\nReading source...")
+    printDebug("----------\nReading source...")
     g = Ontospy(SOURCE, verbose=False)
 
     for x in g.all_ontologies:
@@ -501,22 +500,22 @@ def _import_PREFIXCC(keyword=""):
         else:
             options += [(str(x.prefix), str(x.uri))]
 
-    ut.printDebug(f"----------\n{len(options):d} results found.")
+    printDebug(f"----------\n{len(options):d} results found.")
 
     counter = 1
     for x in options:
-        ut.printDebug(
-            Fore.BLUE
-            + Style.BRIGHT
-            + "[%d]" % counter
-            + Style.RESET_ALL
-            + x[0]
-            + " ==> "
-            + Fore.RED
-            + x[1]
-            + Style.RESET_ALL
+        printDebug(
+                Fore.BLUE
+                + Style.BRIGHT
+                + f"[{counter:d}]"
+                + Style.RESET_ALL
+                + x[0]
+                + " ==> "
+                + Fore.RED
+                + x[1]
+                + Style.RESET_ALL
         )
-        # ut.printDebug(Fore.BLUE + x[0] + " ==> " + x[1])
+        # printDebug(Fore.BLUE + x[0] + " ==> " + x[1])
         counter += 1
 
     while True:
@@ -533,7 +532,7 @@ def _import_PREFIXCC(keyword=""):
             try:
                 _id = int(var)
                 ontouri = options[_id - 1][1]
-                ut.printDebug(
+                printDebug(
                     Fore.RED
                     + "\n---------\n"
                     + ontouri
@@ -545,35 +544,35 @@ def _import_PREFIXCC(keyword=""):
                     action_import(ontouri)
                 return
             except:
-                ut.printDebug("Error retrieving file. Import failed.")
+                printDebug("Error retrieving file. Import failed.")
                 continue
 
 
 def action_bootstrap(verbose=False):
     """Bootstrap the local REPO with a few cool ontologies"""
-    ut.printDebug("The following ontologies will be imported:")
-    ut.printDebug("--------------")
+    printDebug("The following ontologies will be imported:")
+    printDebug("--------------")
     count = 0
     for s in BOOTSTRAP_ONTOLOGIES:
         count += 1
-        ut.printInfo(count, "<%s>" % s)
+        printInfo(count, "<%s>" % s)
 
-    ut.printDebug("--------------")
-    ut.printDebug("Note: this operation may take several minutes.")
-    ut.printDebug("Proceed? [Y/N]")
+    printDebug("--------------")
+    printDebug("Note: this operation may take several minutes.")
+    printDebug("Proceed? [Y/N]")
     var = eval(input())
     if var == "y" or var == "Y":
         for uri in BOOTSTRAP_ONTOLOGIES:
             try:
-                ut.printDebug("--------------")
+                printDebug("--------------")
                 action_import(uri, verbose)
             except:
-                ut.printDebug("OPS... An Unknown Error Occurred - Aborting Installation")
-        ut.printDebug("\n==========\n" + "Bootstrap command completed.", "important")
+                printDebug("OPS... An Unknown Error Occurred - Aborting Installation")
+        printDebug("\n==========\n" + "Bootstrap command completed.", "important")
         return True
     else:
-        ut.printDebug("--------------")
-        ut.printDebug("Goodbye")
+        printDebug("--------------")
+        printDebug("Goodbye")
         return False
 
 
@@ -586,9 +585,9 @@ def action_update_library_location(_location):
 
     # if not(os.path.exists(_location)):
     # 	os.mkdir(_location)
-    # 	ut.printDebug("Creating new folder..", "comment")
+    # 	printDebug("Creating new folder..", "comment")
 
-    ut.printDebug("Old location: '%s'" % get_home_location(), "comment")
+    printDebug(f"Old location: '{get_home_location()}'", "comment")
 
     if os.path.isdir(_location):
 
@@ -613,8 +612,8 @@ def action_cache_reset():
     Then re-generate cached version of all models in the local repo
 
     """
-    ut.printDebug("""The existing cache will be erased and recreated.""")
-    ut.printDebug(
+    printDebug("""The existing cache will be erased and recreated.""")
+    printDebug(
         """This operation may take several minutes, depending on how many files exist in your local library."""
     )
     ONTOSPY_LOCAL_MODELS = get_home_location()
@@ -625,34 +624,33 @@ def action_cache_reset():
     var = eval(input(Style.BRIGHT + "=====\nProceed? (y/n) " + Style.RESET_ALL))
     if var == "y":
         repo_contents = get_localontologies()
-        ut.printInfo(
-            Style.BRIGHT
-            + "\n=====\n%d ontologies available in the local library\n====="
-            % len(repo_contents)
-            + Style.RESET_ALL
+        printInfo(
+                Style.BRIGHT
+                + f"\n=====\n{len(repo_contents):d} ontologies available in the local library\n====="
+                + Style.RESET_ALL
         )
         for onto in repo_contents:
             fullpath = ONTOSPY_LOCAL_MODELS + "/" + onto
             try:
-                ut.printInfo(Fore.RED + "\n=====\n" + onto + Style.RESET_ALL)
-                ut.printInfo("Loading graph...")
+                printInfo(Fore.RED + "\n=====\n" + onto + Style.RESET_ALL)
+                printInfo("Loading graph...")
                 g = Ontospy(fullpath)
-                ut.printInfo("Loaded ", fullpath)
+                printInfo("Loaded ", fullpath)
             except:
                 g = None
-                ut.printDebug(
+                printDebug(
                     "Error parsing file. Please make sure %s contains valid RDF."
                     % fullpath
                 )
 
             if g:
-                ut.printInfo("Caching...")
+                printInfo("Caching...")
                 do_pickle_ontology(onto, g)
 
-        ut.printDebug(Style.BRIGHT + "===Completed===" + Style.RESET_ALL)
+        printDebug(Style.BRIGHT + "===Completed===" + Style.RESET_ALL)
 
     else:
-        ut.printDebug("Goodbye")
+        printDebug("Goodbye")
 
 
 def actions_delete():
@@ -672,17 +670,17 @@ def actions_delete():
             var = eval(input("Are you sure you want to delete this file? (y/n)"))
             if var == "y":
                 os.remove(fullpath)
-                ut.printDebug("Deleted %s" % fullpath, "important")
+                printDebug("Deleted %s" % fullpath, "important")
                 cachepath = ONTOSPY_LOCAL_CACHE + filename + ".pickle"
                 # @todo: do this operation in /cache...
                 if os.path.exists(cachepath):
                     os.remove(cachepath)
-                    ut.printDebug("---------")
-                    ut.printDebug("File deleted [%s]" % cachepath, "important")
+                    printDebug("---------")
+                    printDebug("File deleted [%s]" % cachepath, "important")
 
                 return True
             else:
-                ut.printDebug("Goodbye")
+                printDebug("Goodbye")
 
     return False
 
@@ -751,7 +749,7 @@ def action_visualize(
 
     # 2017-01-23: bypass pickled stuff as it has wrong counts etc..
     # get ontospy graph
-    ut.printDebug("Loading graph...", dim=True)
+    printDebug("Loading graph...", dim=True)
 
     g = Ontospy(
         ontouri,
@@ -776,7 +774,7 @@ def action_visualize(
             os.makedirs(path)
 
     # url  = build_viz(ontouri, g, viztype, path)
-    ut.printDebug("Building visualization...", dim=True)
+    printDebug("Building visualization...", dim=True)
     url = build_visualization(ontouri, g, viztype, path, title, theme)
 
     return url

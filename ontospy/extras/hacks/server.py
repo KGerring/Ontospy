@@ -2,6 +2,7 @@
 #  -*- coding: UTF-8 -*-
 
 """
+
 UTILITY TO START A LOCAL SERVER
 
 Copyright (c) 2015 __Michele Pasin__ <http://www.michelepasin.org>. All rights reserved.
@@ -9,8 +10,6 @@ Copyright (c) 2015 __Michele Pasin__ <http://www.michelepasin.org>. All rights r
 Shows local repo within a server
 
 """
-
-
 import optparse
 import os
 import sys
@@ -30,7 +29,6 @@ USAGE = "@todo"
 
 
 DEFAULT_PORT = 7899
-
 
 # in order to avoid waiting for a minute after restar
 class NoBrokenServer(socketserver.TCPServer):

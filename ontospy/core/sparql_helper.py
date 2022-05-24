@@ -6,14 +6,124 @@ Python and RDF Utils for Ontospy
 Copyright (c)  __Michele Pasin__ <http://www.michelepasin.org>. All rights reserved.
 
 """
-
-
 import rdflib
-
 from .utils import *
 from . import utils as ut
 
 DEFAULT_LANGUAGE = "en"
+yago_endpoint = 'https://yago-knowledge.org/sparql/query'
+dbpedia_endpoint = 'http://dbpedia.org/sparql'
+triply =  'https://api.triplydb.com/queries/academy/sparql-html/run'
+
+#extruct.extract
+
+
+#rdf.plugins.store,rdf.plugins.serializer,rdf.plugins.resultserializer,rdf.plugins.resultparser,rdf.plugins.queryresult,
+# rdf.plugins.queryprocessor,rdf.plugins.parser
+#pygments.lexers
+
+#bibsearch.bibsearch:main
+#cachecontrol._cmd:main
+#couchdb.loader:main, couchdb.view:main
+
+#cssutils.scripts.cssparse:main,cssutils.scripts.csscombine:main,cssutils.scripts.csscapture:main
+#databricks_cli.dbfs.cli:dbfs_group
+
+INV = '/Users/kristen/repos/_tmp/linkml/docs/objects.inv'
+
+#databricks_cli.cli:cli
+#datapackage.__main__:cli
+#datasets.commands.datasets_cli:main
+#deepdiff.commands:cli
+#dynaconf.cli:main
+#extruct.tool:main
+#fastavro.__main__:main
+#genson.cli:main
+#hdfs.__main__:main
+#hdfs.ext.avro.__main__:main
+#isort.main:identify_imports_main
+#isort.main:main
+#json5.tool:main
+#json_flattener.cli:main
+#jsonpath_ng.bin.jsonpath:entry_point
+#jsonschema.cli:main
+#jupytext.cli:jupytext
+#kgx.cli:cli
+#linkml.generators.golrgen:cli
+#linkml.generators.jsonldcontextgen:cli
+#linkml.generators.jsonldgen:cli
+#linkml.generators.jsonschemagen:cli
+#linkml.generators.linkmlgen:cli
+#linkml.generators.namespacegen:cli
+#linkml.generators.owlgen:cli
+#linkml.generators.prefixmapgen:cli
+#linkml.generators.projectgen:cli
+#linkml.generators.pythongen:cli
+#linkml.generators.rdfgen:cli
+#linkml.generators.shaclgen:cli
+#linkml.generators.shexgen:cli
+#linkml.generators.sparqlgen:cli
+#linkml.generators.sqlalchemygen:cli
+#linkml.generators.sqltablegen:cli
+#linkml.generators.sssomgen:cli
+#linkml.generators.yamlgen:cli
+#linkml.generators.yumlgen:cli
+#linkml.utils.converter:cli
+#linkml.utils.execute_tutorial:cli
+#linkml.utils.sqlutils:main
+#linkml.validators.jsonschemavalidator:cli
+#linkml.validators.sparqlvalidator:cli
+#linkml_dataops.changer.jsonpatch_changer:cli
+#linkml_dataops.generators.apigenerator:cli
+#linkml_dataops.generators.pyapigenerator:cli
+#linkml_runtime.utils.comparefiles:cli
+#m2r2:main
+#mlflow.cli:cli
+#netCDF4.utils:ncinfo
+#oletools.ezhexviewer:main
+#oletools.pyxswf:main
+#ontogram.cli:main
+
+#openapi_spec_validator.__main__:main
+#pprintpp:console, pubs.pubs_cmd:execute
+#pyarrow:_plasma_store_entry_point
+#pyfiglet:main
+#pyglossary.ui.main:main #/opt/anaconda3/envs/py39/lib/python3.9/site-packages/pyglossary/ui/main.py
+#pyjsg.parser_impl.generate_python:generate
+#shexeval pyshex.shex_evaluator:evaluate_cli, pytaxonomies.script:main
+#ray.ray_operator.operator:main
+#ray.scripts.scripts:main, ray.serve.scripts:cli, ray.tune.scripts:cli
+
+#rdfextras.tools.csv2rdf:main
+#rdfextras.tools.rdf2dot:main
+#rdfextras.tools.rdfpipe:main
+#rdfextras.tools.rdfs2dot:main
+#rdflib.tools.csv2rdf:main
+#rdflib.tools.graphisomorphism:main
+#rdflib.tools.rdf2dot:main
+#repoze.sendmail.queue:run_console
+#rnc2rng.__main__:main
+#rq.cli:info, sacrebleu.sacrebleu:main, sacremoses.cli:cli
+#schema_salad.main:main
+#schema_salad.makedoc:main
+#skosify.cli:main, splitter.splitter:main, sqlparse.__main__:main, sssom.cli:main
+#tableschema, tldextract.cli:main, tuna.cli:main, uncompyle6.bin.uncompile:main_bin
+#userpath.cli:userpath
+#xml2rfc.run:main
+
+#xmlschema.resources.XMLResource, LazyXPath2Parser, LazySelector, normalize_url, is_url, is_local_scheme, is_remote_url
+#is_local_url, url_path_is_file, normalize_locations, fetch_resource, fetch_schema_locations, fetch_schema, fetch_namespaces
+
+#xmlschema.helpers.get_namespace
+
+#xmlschema.documents
+
+#xmlschema.cli:json2xml, xmlschema.cli:xml2json, xmlschema.cli:validate
+#xmlschema, iter_errors, to_json, from_json
+#XMLSchema11
+#schema = schema_class(args.schema, locations=args.locations, loglevel=loglevel)
+#json_path = base_path.joinpath(xml_path.name).with_suffix('.json')
+
 
 
 class SparqlHelper:
@@ -29,7 +139,7 @@ class SparqlHelper:
     Hence, when a list is returned, the URI/entity is extracted with index [0]
     """
 
-    def __init__(self, rdfgraph, sparql_endpoint=False):
+    def __init__(self, rdfgraph: rdflib.Graph, sparql_endpoint=False):
         super(SparqlHelper, self).__init__()
         self.rdflib_graph = rdfgraph
         self.sparql_endpoint = sparql_endpoint

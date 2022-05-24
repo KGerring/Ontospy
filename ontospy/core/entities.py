@@ -13,7 +13,7 @@ from . import *
 from .utils import *
 
 
-class RdfEntity(object):
+class RdfEntity:
     """
     Pythonic representation of an RDF resource - normally not instantiated but used for
     inheritance purposes
@@ -28,9 +28,10 @@ class RdfEntity(object):
     """
 
     _ids = count(0)
+    uri: rdflib.URIRef
 
     def __repr__(self):
-        return "<Ontospy: RdfEntity object for uri *%s*>" % (self.uri)
+        return f"<Ontospy: RdfEntity object for uri *{self.uri}*>"
 
     def __init__(self,
                  uri,
@@ -51,7 +52,7 @@ class RdfEntity(object):
         """
         self.id = next(self._ids)
 
-        self.uri = uri  # rdflib.Uriref
+        self.uri: rdflib.URIRef = uri  # rdflib.URIRef
 
         self.locale = inferURILocalSymbol(self.uri)[0]
         self.ext_model = ext_model
@@ -251,8 +252,6 @@ class RdfEntity(object):
 
         return out
 
-
-
 class Ontology(RdfEntity):
     """
     Pythonic representation of an OWL ontology
@@ -305,7 +304,6 @@ class Ontology(RdfEntity):
         printInfo("Classes.....: %d" % len(self.all_classes))
         printInfo("Properties..: %d" % len(self.all_properties))
 
-
 class OntoClass(RdfEntity):
     """
     Python representation of a generic class within an ontology.
@@ -321,8 +319,13 @@ class OntoClass(RdfEntity):
             ]
     """
 
-    def __init__(self, uri, rdftype=None, namespaces=None, 
-                ext_model=False, pref_title="qname", pref_lang="en"):
+    def __init__(self, uri,
+                 rdftype=None,
+                 namespaces=None,
+                 ext_model=False,
+                 pref_title="qname",
+                 pref_lang="en"
+                 ):
         """
         ...
         """
@@ -372,7 +375,6 @@ class OntoClass(RdfEntity):
         printInfo(self.uri, "green")
         self.printStats()
         # self.printGenericTree()
-
 
 class OntoProperty(RdfEntity):
     """
@@ -424,7 +426,6 @@ class OntoProperty(RdfEntity):
         self.printStats()
         # self.printGenericTree()
 
-
 class OntoSKOSConcept(RdfEntity):
     """
     Python representation of a generic SKOS concept within an ontology.
@@ -465,7 +466,6 @@ class OntoSKOSConcept(RdfEntity):
         self.printStats()
         self.printGenericTree()
 
-
 class OntoShape(RdfEntity):
     """
     Python representation of a SHACL shape.
@@ -498,3 +498,5 @@ class OntoShape(RdfEntity):
         """ shotcut to pull out useful info for interactive use """
         # self.printTriples()
         self.printStats()
+
+
