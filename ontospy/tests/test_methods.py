@@ -28,7 +28,6 @@ crm: http://erlangen-crm.org/current/
 daml: http://www.daml.org/2001/03/daml+oil#
 dc: http://purl.org/dc/elements/1.1/
 dcam: http://purl.org/dc/dcam/
-discourse_relationships: http://purl.org/swan/2.0/discourse-relationships/
 dol: http://www.loa-cnr.it/ontologies/DOLCE-Lite#
 eco: http://purl.org/obo/owl/ECO
 ecrm: http://erlangen-crm.org/current/

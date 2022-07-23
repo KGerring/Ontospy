@@ -217,11 +217,77 @@ class RdfEntity:
     def bestDescription(self, prefLanguage="", quotes=False):
         """
         facility for extracting a human readable description for an entity
+        
+        https://www.w3.org/2009/08/skos-reference/skos.rdf
+        
+        https://www.w3.org/2009/08/skos-reference
+        skos.rdf
+        skos.html
+            #http://www.w3.org/TR/skos-reference/extras.css
+            #http://www.w3.org/StyleSheets/TR/base
+            #http://www.w3.org/2004/02/skos/core.html
+            #skos:mappingRelation, skos:closeMatch
+            
+        #http://www.w3.org/TR/2009/REC-skos-reference-20090818/#xl
+        #http://www.w3.org/2008/05/skos-xl
+        #owl:imports rdf:resource="http://www.w3.org/2004/02/skos/core"
+        
+        #http://www.w3.org/2008/05/skos-xl
+        #http://www.w3.org/TR/skos-reference/
+        
+        skosxl = 'http://www.w3.org/2008/05/skos-xl#'
+        #http://www.w3.org/2009/08/skos-reference/skos-xl.rdf
+        #http://www.w3.org/TR/skos-reference/skos-xl.rdf
+        
+        https://www.w3.org/2009/08/skos-reference/skos-xl.rdf
+        https://www.w3.org/2009/08/skos-reference/skos-owl1-dl.rdf
+        https://www.w3.org/2009/08/skos-reference/skos-dl.rdf
+        
+        #specs,vocabs,data,tools,development,references,
+        #skosxl:labelRelation skosxl:Label
+        mads = 'http://www.loc.gov/mads/rdf/v1#
+        
+        
+        #ClosedNamespace
+        #NamespaceManager
+        #is_ncname
+        #split_uri
+        #insert_trie
+        #insert_strie
+        #get_longest_namespace
+        #_extras
+        #DefinedNamespaceMeta
+        #_NS: Namespace
+        #__getitem__(cls, name: str, default=None)
+        #_NS[name]
+        #values = {cls[str(x)] for x in cls.__annotations__}
+        #terms = {pfx: str(self._NS)}
+        
+        __module__
+        __annotations__
+        __doc__
+        __contains__
+        __getattribute__
+        __new__
+        __init__
+        as_jsonld_context
+        __call__
+        __subclasses__
+        __prepare__
+        __instancecheck__
+        __subclasscheck__
+        __flags__
+        __weakrefoffset__
+        __dictoffset__
+        __mro__
+        __bases__, __abstractmethods__, __text_signature__
+        __subclasshook__
+        __init_subclass__
         """
 
         test_preds = [
             rdflib.RDFS.comment,
-            rdflib.namespace.DCTERMS.description,
+            rdflib.namespace.DCTERMS.description, #MediaType
             rdflib.namespace.DC.description,
             rdflib.namespace.SKOS.definition,
         ]
@@ -264,7 +330,7 @@ class Ontology(RdfEntity):
     """
 
     def __repr__(self):
-        return "<Ontospy: Ontology object for uri *%s*>" % (self.uri)
+        return f"<Ontospy: Ontology object for uri *{self.uri}*>"
 
     def __init__(
         self,
@@ -320,8 +386,8 @@ class Ontology(RdfEntity):
 
     def stats(self):
         """shotcut to pull out useful info for interactive use"""
-        ut.printInfo("Classes.....: %d" % len(self.all_classes))
-        ut.printInfo("Properties..: %d" % len(self.all_properties))
+        ut.printInfo(f"Classes.....: {len(self.all_classes):d}")
+        ut.printInfo(f"Properties..: {len(self.all_properties):d}")
 
 
 class OntoClass(RdfEntity):
@@ -384,13 +450,13 @@ class OntoClass(RdfEntity):
     def printStats(self):
         """shortcut to pull out useful info for interactive use"""
         ut.printInfo("----------------")
-        ut.printInfo("Parents......: %d" % len(self.parents()))
-        ut.printInfo("Children.....: %d" % len(self.children()))
-        ut.printInfo("Ancestors....: %d" % len(self.ancestors()))
-        ut.printInfo("Descendants..: %d" % len(self.descendants()))
-        ut.printInfo("Domain of....: %d" % len(self.domain_of))
-        ut.printInfo("Range of.....: %d" % len(self.range_of))
-        ut.printInfo("Instances....: %d" % self.count())
+        ut.printInfo(f"Parents......: {len(self.parents()):d}")
+        ut.printInfo(f"Children.....: {len(self.children()):d}")
+        ut.printInfo(f"Ancestors....: {len(self.ancestors()):d}")
+        ut.printInfo(f"Descendants..: {len(self.descendants()):d}")
+        ut.printInfo(f"Domain of....: {len(self.domain_of):d}")
+        ut.printInfo(f"Range of.....: {len(self.range_of):d}")
+        ut.printInfo(f"Instances....: {self.count():d}")
         ut.printInfo("----------------")
 
     def printGenericTree(self):
@@ -502,7 +568,7 @@ class OntoSKOSConcept(RdfEntity):
         self.sparqlHelper = None  # the original graph the class derives from
 
     def __repr__(self):
-        return "<SKOS Concept *%s*>" % (self.uri)
+        return f"<SKOS Concept *{self.uri}*>"
 
     def printStats(self):
         """shotcut to pull out useful info for interactive use"""

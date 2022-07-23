@@ -142,7 +142,7 @@ class RDFLoader:
 
         # if self.verbose: ut.printDebug("----------")
         if self.verbose:
-            ut.printDebug(f"Reading: <{uri}>" fg="green")
+            ut.printDebug(f"Reading: <{uri}>", fg="green")
         success = False
 
         sorted_fmt_opts = ut.try_sort_fmt_opts(self.rdf_format_opts, uri)
@@ -197,6 +197,7 @@ class RDFLoader:
                 # TODO ??
                 # if f == 'json-ld':
                 #     self._fix_default_graph_for_jsonld()
+
                 self.rdflib_graph.parse(data=data, format=f)
                 if self.verbose:
                     ut.printDebug("..... success!")

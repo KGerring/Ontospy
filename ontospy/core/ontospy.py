@@ -20,6 +20,8 @@ from .entities import RdfEntity, Ontology, OntoClass, OntoProperty, OntoSKOSConc
 from . import utils as ut
 from abc import ABC, ABCMeta
 
+
+
 class _Ontospy:
     rdflib_graph = None
     sparql_endpoint = None
@@ -27,7 +29,7 @@ class _Ontospy:
     sources: list = None
     sparqlHelper = None
     pref_title: str
-    pref_lang: str
+    pref_lang: str = "en"
     hide_individuals: bool
     namespaces: list = []
     # entities buckets start with 'all_'
@@ -183,9 +185,7 @@ class _Ontospy:
         Hence there is some logic to deal with these edge cases.
         """
         out = []
-        
         qres = self.sparqlHelper.getOntology()
-        
         if qres:
             # NOTE: SPARQL returns a list of rdflib.query.ResultRow (~ tuples..)
             

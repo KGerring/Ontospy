@@ -12,87 +12,54 @@
 from __future__ import annotations
 
 from dataclasses import dataclass as dclass
-import sys  # isort:skip
-import os  # isort:skip
-import re  # isort:skip
+
 import aenum
 import aniso8601
 import anyconfig
 import asttokens
-
-import bibsearch, bibsearch.bibsearch._get_parser
+import bibsearch
+import bibsearch.bibsearch._get_parser
 import bibtexparser
-
-"""
-import pubs
-from pubs import datacache, databroker, filebroker, pretty, utils, repo
-from pubs import paper, events, content, apis, update
-from pubs import uis, query, pubs_cmd, plugins, paper, p3, events, content, command_utils, \
-    color, apis, bibstruct, completion, content
-from pubs import templates, config, plugs, commands
-import pubs.templates.str_templates
-import pubs.config.conf as conf #load_default_conf, get_confpath, check_conf
-#/Users/kristen/.pubsrc
-"""
 import bidict
-import Bio #Newick; Bio.Phylo.BaseTree; Bio.Phylo._cdao_owl
-
+import Bio  # Newick; Bio.Phylo.BaseTree; Bio.Phylo._cdao_owl
 #Bio.Phylo._cdao_owl.resolve_uri; Bio.Phylo.CDAOIO
 #resolve_uri
-import bleach #ALLOWED_ATTRIBUTES, ALLOWED_PROTOCOLS, Linker, Cleaner
+import bleach  # ALLOWED_ATTRIBUTES, ALLOWED_PROTOCOLS, Linker, Cleaner
 import box
 import bs4
-
-
-from cachecontrol.caches import RedisCache, FileCache
-from cachecontrol.controller import CacheController
-#CommentedMap, CommentedSeq, DefaultFetcher, add_lc_filename, relname, yaml_no_t, file_uri, uri_file_path
-from ruamel.yaml.comments import CommentedBase
-import ruamel
-#add_lc_filename, relname, _add_lc_filename
-
 import bytecode
 import click
 import click_shell
 import concepts
 import configargparse
-
 import cufflinks
 import dacite
+#prefixcommons.curie_util.read_biocontext('monarch_context')
+import datapackage
 import datasets
 import defusedxml
 import dill
 import diskcache
 import docformatter
 import docstring_parser
-
 import dominate
 import email_reply_parser
 import enchant
-
 import extruct
-
-import fastobo      #fastobo.doc.OboDoc; doc = fastobo.load("tests/data/ms.obo"); fastobo.dump_owl(doc, "tests/data/ms.ofn", format="ofn")
-#import feedgenerator
-
+import fastavro
+#libarchive
+import fastobo  # fastobo.doc.OboDoc; doc = fastobo.load("tests/data/ms.obo"); fastobo.dump_owl(doc, "tests/data/ms.ofn", format="ofn")
 import feedparser
 import frontmatter
 import fsspec
-
 import furl
-import hyperlink #scheme_uses_netloc, register_scheme,parse,DecodedURL, URL, parse
-
-
- # DecodedURL
 import genson
 import graphtage
-
-#import hdfs    scheme://username:password@host:port/path?query#fragment
-
 import hexbytes
 import html2text
 import html5lib
 import humanize
+import hyperlink  # scheme_uses_netloc, register_scheme,parse,DecodedURL, URL, parse
 import icdiff
 import identify
 import idna
@@ -103,32 +70,11 @@ import isodate
 import isort
 import jinja2
 import jschon
-
 import jsonasobj
 import jsonasobj2
 import jsondiff
 import jsonschema
-
-#import kgx
-
-from gridfs import GridFS
-
-from requests_cache.models import AnyRequest, AnyResponse, CachedResponse, CachedRequest
-from requests_cache.backends.base import BaseCache
-from requests_cache.backends.gridfs import GridFSCache, GridFSPickleDict
-from requests_cache.backends.mongodb import MongoCache, MongoDict, MongoPickleDict
-from requests_cache.backends.redis import RedisCache, RedisDict, RedisHashDict
-from requests_cache import CacheMixin, get_cache, install_cache, CachedSession, CachedHTTPResponse
-#session = CachedSession('http_cache', backend='mongodb', host='192.168.1.63', port=27017)
-# backend = MongoCache(host='192.168.1.63', port=27017)
-#session = CachedSession('http_cache', backend=backend)
-
-from redis import Redis, StrictRedis
-
-
-
 import jupytext
-
 import kombu
 import language_tags
 import lark
@@ -138,14 +84,9 @@ import lunchbox
 import lxml
 import markdown
 import metaflow
-
 import mf2py
-
 import mimeparse
 import mimerender
-import pantomime #normalize_extension, parse_mimetype
-
-
 import more_itertools
 import multipledispatch
 import murmurhash
@@ -153,41 +94,32 @@ import myst_parser
 import nltk
 import normality
 import numpydoc
-
-import pavlova
-import port_for #port_for.PortStore(); /etc/port-for.conf
-
 import owlready2
+import pantomime  # normalize_extension, parse_mimetype
+import pavlova
+import port_for  # port_for.PortStore(); /etc/port-for.conf
 import pronto
-
 import pyaml
 import pydantic
 #import pyfiglet
 import pyld
+import owlrl, tableschema, datapackage
 #import pyrdfa3
 #pyshex.prefixlib.PrefixLibrary
 import pyshex  # pyshex.known_prefixes, PrefixLibrary
-import pytaxonomies #Taxonomies
+import pytaxonomies  # Taxonomies
 import rdfextras
 import rdflib
-#import rdflib_sqlalchemy
-#import rdflib_sqlite
+
 import readme_renderer
 import recommonmark
 import rfc3986  # URIReference, iri_reference, urlparse, urlparse, normalize_uri
 import rfc3987  # ,parse, compose, http://tools.ietf.org/html/rfc3986#section-5.3, list(rfc3987.patterns); rfc3987._uri_rules, _common_rules
-
 import rich
 import routes
-#import skosify #localname, get_concept_scheme, detect_namespace, create_concept_scheme
-#expand_curielike, expand_mapping_target, Config, config
-
-#CONTEXT
-#import skosprovider #ConceptScheme, Collection, Registry, Concept, CONTEXT, dct:bibliographicCitation
-#import spark_parser
-
-#import textblob
-
+import ruamel
+import skosify
+import skosprovider
 import thinc
 import toolz
 import typer
@@ -203,11 +135,104 @@ import xmltodict
 
 from attr import define, field
 
-from prefixcommons import curie_transformer, curie_util, expand_uri, contract_uri #get_prefixes, default_curie_maps
-from prefixcommons.curie_transformer import CsvTransformer, Transformer #get_prefixes,default_curie_maps,read_biocontext
-from prefixcommons.curie_util import read_local_jsonld_context, read_remote_jsonld_context, extract_prefixmap, read_biocontext
-#prefixcommons.curie_util.read_biocontext('monarch_context')
-import datapackage
+from cachecontrol.caches import FileCache, RedisCache
+from cachecontrol.controller import CacheController
+from gridfs import GridFS
+
+from linkml_runtime.linkml_model.types import Uri, Uriorcurie
+from linkml_runtime.utils.curienamespace import CurieNamespace
+from linkml_runtime.utils.metamodelcore import URI, Curie, URIorCURIE
+from prefixcommons import contract_uri  # get_prefixes, default_curie_maps
+from prefixcommons import curie_transformer, curie_util, expand_uri
+from prefixcommons.curie_transformer import \
+    CsvTransformer  # get_prefixes,default_curie_maps,read_biocontext
+from prefixcommons.curie_transformer import Transformer
+from prefixcommons.curie_util import (
+    extract_prefixmap,
+    read_biocontext,
+    read_local_jsonld_context,
+    read_remote_jsonld_context
+)
+from redis import Redis, StrictRedis
+from requests_cache import (
+    CachedHTTPResponse,
+    CachedSession,
+    CacheMixin,
+    get_cache,
+    install_cache
+)
+
+from requests_cache.backends.base import BaseCache
+from requests_cache.backends.gridfs import GridFSCache, GridFSPickleDict
+from requests_cache.backends.mongodb import (
+    MongoCache,
+    MongoDict,
+    MongoPickleDict
+)
+from requests_cache.backends.redis import RedisCache, RedisDict, RedisHashDict
+from requests_cache.models import (
+    AnyRequest,
+    AnyResponse,
+    CachedRequest,
+    CachedResponse
+)
+
+from requests_html import HTMLSession, HTML
+
+#CommentedMap, CommentedSeq, DefaultFetcher, add_lc_filename, relname, yaml_no_t, file_uri, uri_file_path
+from ruamel.yaml.comments import CommentedBase
+from werkzeug.urls import (
+    iri_to_uri,
+    uri_to_iri,
+    url_fix,
+    url_join,
+    url_parse,
+    url_unparse
+)
+
+import sys
+import os
+import re
+
+
+"""
+import pubs
+from pubs import datacache, databroker, filebroker, pretty, utils, repo
+from pubs import paper, events, content, apis, update
+from pubs import uis, query, pubs_cmd, plugins, paper, p3, events, content, command_utils, \
+    color, apis, bibstruct, completion, content
+from pubs import templates, config, plugs, commands
+import pubs.templates.str_templates
+import pubs.config.conf as conf #load_default_conf, get_confpath, check_conf
+#/Users/kristen/.pubsrc
+"""
+#import feedgenerator
+
+ # DecodedURL
+
+#import hdfs    scheme://username:password@host:port/path?query#fragment
+
+
+
+#import kgx
+
+
+#session = CachedSession('http_cache', backend='mongodb', host='192.168.1.63', port=27017)
+# backend = MongoCache(host='192.168.1.63', port=27017)
+#session = CachedSession('http_cache', backend=backend)
+
+#import skosify #localname, get_concept_scheme, detect_namespace, create_concept_scheme
+#expand_curielike, expand_mapping_target, Config, config
+
+#CONTEXT
+#import skosprovider #ConceptScheme, Collection, Registry, Concept, CONTEXT, dct:bibliographicCitation
+#import spark_parser
+
+#import textblob
+
+
+
+
 #bibsearch,datasets-cli,datapackage,extruct,fastavro,genson,graphtage
 #'html2text
 #ia,jfl,pyjson5
@@ -222,9 +247,6 @@ import datapackage
 #pypistats pytaxonomies, schema-salad-tool
 
 
-from prefixcommons import contract_uri, expand_uri
-from prefixcommons.curie_transformer import CsvTransformer, Transformer
-from prefixcommons import curie_util
 
 def file_uri(path: str, split_frag: bool = False) -> str:
     if path.startswith("file://"):
@@ -455,10 +477,11 @@ INITIAL_CTX = (('as', 'https://www.w3.org/ns/activitystreams#'),
 
 scot = 'http://rdfs.org/scot/spec', 'http://rdfs.org/scot/ns#'
 sdm = "https://w3id.org/vocab/sdm" #SPARQL endpoint metadata, 'http://linkedvocabs.org/vocab/sdm/sdm.owl'
+#http://purl.org/vocommons/voaf#vocabulary
+cal = 'http://reference.data.gov.uk/def/intervals/CalendarInterval'
 sd = "http://www.w3.org/ns/sparql-service-description"
 #  http://www.w3.org/ns/r2rml#
 #sio = "http://semanticscience.org/ontology/sio.owl"
-#  http://www.ontologydesignpatterns.org/cp/owl/timeindexedsituation.owl
 #  http://protege.stanford.edu/plugins/owl/protege#
 protege = 'https://protege.stanford.edu/plugins/owl/dc/protege-dc.owl'
 relational = 'http://ontology.cybershare.utep.edu/dbowl/relational-to-ontology-mapping-primitive.owl'
@@ -509,7 +532,6 @@ class AwesomeOpenSource:
 # https://www.w3.org/TR/swbp-vocab-pub/
 
 
-import genson, fastavro, datapackage,extruct, skosprovider, skosify, mf2py
 
 # extruct = extruct.tool:main
 # forte.data.ontology.ontology_code_generator OntologyCodeGenerator
@@ -604,8 +626,6 @@ FORMAT_URIS = (('json_ld', 'http://www.w3.org/ns/formats/JSON-LD'),
 
 
 
-#: rfc2425
-
 #"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd"
 ov="http://open.vocab.org/terms/"
 
@@ -691,7 +711,6 @@ class dbpedia:
     mf = "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#"
     mo = "http://purl.org/ontology/mo/"
     mql = "http://www.freebase.com/"
-    nci = "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#" #http://evs.nci.nih.gov/ftp1/NCI_Thesaurus, https://ncit.nci.nih.gov
     nfo = "http://www.semanticdesktop.org/ontologies/nfo/#"
     ng = "http://www.openlinksw.com/schemas/ning#"
     oai = "http://www.openarchives.org/OAI/2.0/"
@@ -747,7 +766,8 @@ class dbpedia:
     zem = "http://s.zemanta.com/ns#"
     
     
-"""bibo: 	http://purl.org/ontology/bibo/
+"""
+bibo: 	http://purl.org/ontology/bibo/
 cc: 	http://creativecommons.org/ns#
 dc: 	http://purl.org/dc/terms/
 ex: 	http://example.org/
@@ -1023,8 +1043,6 @@ synsem = 'http://www.w3.org/ns/lemon/synsem'
 ccr = 'https://openskos.meertens.knaw.nl/ccr/browser/'
 olia = 'http://purl.org/olia/'
 iso = 'http://www.isocat.org'
-odp = 'www.ontologydesignpatterns.org'
-LMM = 'http://ontologydesignpatterns.org/wiki/Ontology:LMM'
 LMF = 'http://www.lexicalmarkupframework.org'
 comm_ol = 'https://www.w3.org/community/ontolex/'
 lexicog = 'https://www.w3.org/2019/09/lexicog/'
@@ -1051,7 +1069,21 @@ class w3c:
 
 
 class ontologydesignpatterns:
-    cpannotationschema= "http://www.ontologydesignpatterns.org/schemas/cpannotationschema.owl#"
+    """
+    
+    http://www.ontologydesignpatterns.org/cp/owl/collectionentity.owl
+	http://www.ontologydesignpatterns.org/cp/owl/classification.owl
+	http://www.ontologydesignpatterns.org/cp/owl/place.owl
+	http://www.ontologydesignpatterns.org/cp/owl/timeindexedsituation.owl
+	http://www.ontologydesignpatterns.org/cp/owl/situation.owl
+	www.ontologydesignpatterns.org
+	
+    """
+    ODP = 'http://ontologydesignpatterns.org/wiki/Submissions:Faceted_Classification_Scheme'
+    _base = 'www.ontologydesignpatterns.org'
+    sc = 'http://www.ontologydesignpatterns.org/schemas'
+    LMM = 'http://ontologydesignpatterns.org/wiki/Ontology:LMM'
+    cpas= "http://www.ontologydesignpatterns.org/schemas/cpannotationschema.owl#"
     dul = 'http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#'
     _dul = 'http://www.ontologydesignpatterns.org/ont/dul/ontopic.owl#'
 
@@ -1219,8 +1251,7 @@ class Glossary:
     #uri="http://www.w3.org/2000/07/uri43/uri.xsl?template="
     uri = 'http://www.w3.org/2000/07/uri43/uri.xsl' "http://www.ietf.org/rfc/rfc2396.txt"
     
-    
-    
+   
 class Gloss:
     '''
     /2003/glossary/alpha
@@ -1273,9 +1304,6 @@ class Gloss:
     
     
 
-from linkml_runtime.utils.metamodelcore import URIorCURIE, URI, Curie
-from linkml_runtime.utils.curienamespace import CurieNamespace
-from linkml_runtime.linkml_model.types import Uriorcurie, Uri
 
 err = "https://www.rfc-editor.org/rfc/inline-errata/rfc2026.html"
 IRTF = "https://www.irtf.org/"
@@ -1294,7 +1322,6 @@ SWAP = '/Users/kristen/repos/_tmp/swap'
 
 SUFFIX_FORMAT_MAP = rdflib.util.SUFFIX_FORMAT_MAP
 
-from werkzeug.urls import uri_to_iri, iri_to_uri, url_fix, url_unparse, url_parse, url_join
 
 #linkml sssom-py datasets ontobio rdflib _Ontospy mime pyLODE pyrdfa3 specref opencitations
 #linkml-registry datapackage-py biocontext ttlfiles FAIR-checker mc2skos linkml-model linkml_models.yaml

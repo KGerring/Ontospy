@@ -18,37 +18,41 @@ triply =  'https://api.triplydb.com/queries/academy/sparql-html/run'
 #extruct.extract
 
 
-#rdf.plugins.store,rdf.plugins.serializer,rdf.plugins.resultserializer,rdf.plugins.resultparser,rdf.plugins.queryresult,
-# rdf.plugins.queryprocessor,rdf.plugins.parser
-#pygments.lexers
-
-#bibsearch.bibsearch:main
-#cachecontrol._cmd:main
-#couchdb.loader:main, couchdb.view:main
-
-#cssutils.scripts.cssparse:main,cssutils.scripts.csscombine:main,cssutils.scripts.csscapture:main
-#databricks_cli.dbfs.cli:dbfs_group
+# rdf.plugins.store,
+# rdf.plugins.serializer,
+# rdf.plugins.resultserializer,
+# rdf.plugins.resultparser,
+# rdf.plugins.queryresult,
+# rdf.plugins.queryprocessor,
+# rdf.plugins.parser
 
 INV = '/Users/kristen/repos/_tmp/linkml/docs/objects.inv'
 
 #databricks_cli.cli:cli
 #datapackage.__main__:cli
 #datasets.commands.datasets_cli:main
+
+
 #deepdiff.commands:cli
-#dynaconf.cli:main
 #extruct.tool:main
-#fastavro.__main__:main
+
 #genson.cli:main
-#hdfs.__main__:main
-#hdfs.ext.avro.__main__:main
+
 #isort.main:identify_imports_main
 #isort.main:main
-#json5.tool:main
+
 #json_flattener.cli:main
+
 #jsonpath_ng.bin.jsonpath:entry_point
 #jsonschema.cli:main
+
 #jupytext.cli:jupytext
+
 #kgx.cli:cli
+
+
+###### jsonschema
+
 #linkml.generators.golrgen:cli
 #linkml.generators.jsonldcontextgen:cli
 #linkml.generators.jsonldgen:cli
@@ -71,43 +75,48 @@ INV = '/Users/kristen/repos/_tmp/linkml/docs/objects.inv'
 #linkml.utils.converter:cli
 #linkml.utils.execute_tutorial:cli
 #linkml.utils.sqlutils:main
+
 #linkml.validators.jsonschemavalidator:cli
 #linkml.validators.sparqlvalidator:cli
 #linkml_dataops.changer.jsonpatch_changer:cli
 #linkml_dataops.generators.apigenerator:cli
 #linkml_dataops.generators.pyapigenerator:cli
 #linkml_runtime.utils.comparefiles:cli
-#m2r2:main
+#linkml.reporting.model
+
+#linkml.validators.sparqlvalidator sparqljson2dict, _make_result, SparqlDataValidator,
+#if endpoint_url is not None: results = validator.validate_endpoint(endpoint_url, limit=limit, named_graphs=named_graph)
+#input_format = _get_format(input, input_format)
+#results = validator.validate_file(input, format=input_format)
+#output_format = _get_format(output, output_format, default='json')
+#dumper = get_dumper(output_format)
+
+
 #mlflow.cli:cli
 #netCDF4.utils:ncinfo
-#oletools.ezhexviewer:main
-#oletools.pyxswf:main
 #ontogram.cli:main
 
-#openapi_spec_validator.__main__:main
-#pprintpp:console, pubs.pubs_cmd:execute
-#pyarrow:_plasma_store_entry_point
+
 #pyfiglet:main
+
 #pyglossary.ui.main:main #/opt/anaconda3/envs/py39/lib/python3.9/site-packages/pyglossary/ui/main.py
 #pyjsg.parser_impl.generate_python:generate
 #shexeval pyshex.shex_evaluator:evaluate_cli, pytaxonomies.script:main
 #ray.ray_operator.operator:main
 #ray.scripts.scripts:main, ray.serve.scripts:cli, ray.tune.scripts:cli
 
-#rdfextras.tools.csv2rdf:main
-#rdfextras.tools.rdf2dot:main
-#rdfextras.tools.rdfpipe:main
-#rdfextras.tools.rdfs2dot:main
-#rdflib.tools.csv2rdf:main
-#rdflib.tools.graphisomorphism:main
-#rdflib.tools.rdf2dot:main
 #repoze.sendmail.queue:run_console
 #rnc2rng.__main__:main
-#rq.cli:info, sacrebleu.sacrebleu:main, sacremoses.cli:cli
+
+
 #schema_salad.main:main
 #schema_salad.makedoc:main
-#skosify.cli:main, splitter.splitter:main, sqlparse.__main__:main, sssom.cli:main
-#tableschema, tldextract.cli:main, tuna.cli:main, uncompyle6.bin.uncompile:main_bin
+#skosify.cli:main,
+# splitter.splitter:main,
+# sqlparse.__main__:main,
+# sssom.cli:main
+# tldextract.cli:main,
+# tuna.cli:main, uncompyle6.bin.uncompile:main_bin
 #userpath.cli:userpath
 #xml2rfc.run:main
 
@@ -119,10 +128,80 @@ INV = '/Users/kristen/repos/_tmp/linkml/docs/objects.inv'
 #xmlschema.documents
 
 #xmlschema.cli:json2xml, xmlschema.cli:xml2json, xmlschema.cli:validate
-#xmlschema, iter_errors, to_json, from_json
-#XMLSchema11
-#schema = schema_class(args.schema, locations=args.locations, loglevel=loglevel)
-#json_path = base_path.joinpath(xml_path.name).with_suffix('.json')
+
+from requests_cache import _utils, mongodb, redis, patcher, session
+#CACHE_NAME_KWARGS
+#ALL_METHODS
+#BACKEND_CLASSES
+#BACKEND_KWARGS
+#DO_NOT_CACHE
+#CacheMixin, uninstall_cache, install_cache, CachedSession
+#SERIALIZERS
+#requests_cache.install_cache('demo_cache')
+
+
+
+#cache_name: Cache prefix or namespace, depending on backend
+#backend: Cache backend name or instance = ['sqlite', 'filesystem', 'mongodb', 'gridfs', 'redis', 'dynamodb', 'memory']
+#cache = init_backend(cache_name, backend, **kwargs)
+
+
+#http://vocabulary.semantic-web.at/PoolParty/sparql/OpenData
+#http://lod.springer.com/sparql
+#http://ldf.fi/ww1lod/sparql
+#http://dbpedia.org/sparql
+#http://kbpedia.org/ontologies/kko#WrittenInfo
+
+
+#skos:prefLabel
+#application/sparql-results+xml
+#application/sparql-results+json
+#text/x-html+tr
+#text/x-html+tr
+#sd:resultFormat
+#sd:supportedLanguage
+#text/cxml
+#application/odata+json
+#application/x-ld+json
+#application/ld+json
+#application/x-nice-microdata
+#text/x-html-script-ld+json
+#text/x-html-nice-turtle
+#application/microdata+json
+#sd:Service
+
+from datasets import SCRIPTS_VERSION, config, load_dataset, load_from_disk
+#from datasets.filesystems import *
+#from .utils import *
+#naming
+#info
+#formatting
+#arrow_dataset
+#Dataset
+#concatenate_datasets
+#data_files
+#dataset_dict
+#iterable_dataset
+#BuilderConfig
+#DatasetBuilder
+#DatasetDict
+#ClassLabel
+#Features
+#TranslationVariableLanguages
+#DatasetInfo
+#MetricInfo
+#packaged_modules
+#load
+#inspect
+#get_dataset_config_names
+#et_dataset_infos
+#get_dataset_split_names
+#list_datasets,list_metrics,load_dataset,load_dataset_builder
+#doc_utils,info_utils,file_utils,py_utils,download_manager,streaming_download_manager
+#DownloadConfig,relative_to_absolute_path,flatten_nest_dict,as_sufficient_disk_space,
+#map_nested
+
+
 
 
 
